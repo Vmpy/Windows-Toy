@@ -60,6 +60,21 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
 				}
+				hWILLBeClosed = FindWindowW((LPCWSTR)L"PP12FrameClass",NULL);
+				if(hWILLBeClosed)
+				{
+					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
+				}
+				hWILLBeClosed = FindWindowW((LPCWSTR)L"PPTFrameClass",NULL);
+				if(hWILLBeClosed)
+				{
+					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
+				}
+				hWILLBeClosed = FindWindowW((LPCWSTR)L"PP10FrameClass",NULL);
+				if(hWILLBeClosed)
+				{
+					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
+				}
 			}
 			break;
 		} 
