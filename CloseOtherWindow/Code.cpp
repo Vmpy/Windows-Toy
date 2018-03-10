@@ -75,6 +75,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
 				}
+				
+				hWILLBeClosed = FindWindowW((LPCWSTR)L"OpusApp",NULL);
+				if(hWILLBeClosed)
+				{
+					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
+				}
 			}
 			break;
 		} 
