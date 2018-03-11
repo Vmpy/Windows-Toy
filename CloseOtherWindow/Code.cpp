@@ -1,7 +1,6 @@
 #include <windows.h>
 
 const int Time = 1;
-
 LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam);
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow)
@@ -23,7 +22,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 
 	if(!RegisterClassEx(&wc))
 	{
-		MessageBox(NULL, "Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
+		MessageBox(NULL,"Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
 		return 0;
 	}
 
@@ -32,7 +31,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 		
 	if(hwnd == NULL)
 	{
-		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
+		MessageBox(NULL,"Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
 		return 0;
 	}
 
@@ -47,7 +46,9 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 {
 	static HWND hWILLBeClosed = 0x0;
-	
+	static HWND hDialog;
+	static TCHAR Filename[100];
+	static HKEY hKey;
 	switch(Message)
 	{
 		case WM_TIMER:
@@ -83,12 +84,30 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				}
 			}
 			break;
-		} 
-		case WM_CREATE:
-		{
+		}
+		
+		case WM_CREATE:	
+		{	  
+		    //判断环境是否为WOW64
+		    BOOL isWOW64;  
+		    REGSAM P;  
+		    IsWow64Process(GetCurrentProcess(),&isWOW64);  
+		    if (isWOW64)
+			{  
+		        P = KEY_WRITE | KEY_WOW64_64KEY;  
+		    }
+		    else
+			{  
+		        P = KEY_WRITE;  
+		    }
+			GetModuleFileName(0,Filename,100);
+			RegCreateKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),0,NULL,0,P,NULL,&hKey,NULL);
+			RegSetValueEx(hKey,"EWindow",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
+			RegCloseKey(hKey);
 			SetTimer(hwnd,Time,100,NULL); 
 			break; 
-		} 
+		}
+		
 		case WM_DESTROY:
 		{
 			PostQuitMessage(0);
@@ -98,4 +117,5 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 		default:
 			return DefWindowProc(hwnd,Message,wParam,lParam);
 	}
+	return 0;
 }
