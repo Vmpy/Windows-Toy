@@ -81,6 +81,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
 				}
+				//去除WPS 热点 弹窗. 
+				hWILLBeClosed = FindWindowW(NULL,(LPCWSTR)L"WPS 热点");
+				if(hWILLBeClosed)
+				{
+					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
+				}
 			}
 			break;
 		}
@@ -101,7 +107,8 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 			}
 			GetModuleFileName(0,Filename,100);
 			RegCreateKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),0,NULL,0,P,NULL,&hKey,NULL);
-			RegSetValueEx(hKey,"EWindow",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
+			RegDeleteKeyEx(hKey,"COWindow",P,0); 
+			RegSetValueEx(hKey,"COWindow",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
 			RegCloseKey(hKey);
 			SetTimer(hwnd,Time,100,NULL); 
 			break; 
