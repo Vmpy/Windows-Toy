@@ -27,7 +27,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    hwnd = CreateWindowEx(WS_EX_LAYERED,"ScreenDisplay","ScreenDisplay",WS_VISIBLE|WS_OVERLAPPEDWINDOW,
+    hwnd = CreateWindowEx(WS_EX_TOPMOST|WS_EX_LAYERED,"ScreenDisplay","ScreenDisplay",WS_VISIBLE|WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, /* x */
         CW_USEDEFAULT, /* y */
         640, /* width */
@@ -63,7 +63,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         {
             SetTimer(hwnd,1,100,0);
             break;
-        } 
+        }
         
         case WM_TIMER:
         {
@@ -87,7 +87,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             EndPaint(hwnd,&ps);
             ReleaseDC(hwnd,hSrcDC);
             break; 
-        } 
+        }
         
         case WM_DESTROY:
         {
