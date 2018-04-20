@@ -54,6 +54,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     static HDC hdc;
     static HDC hSrcDC;
+    static RECT DeskTop; 
     static PAINTSTRUCT ps;
     static int cx = 480;
     static int cy = 640;
@@ -61,6 +62,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     {
         case WM_CREATE:
         {
+            GetWindowRect(GetDesktopWindow(),&DeskTop);
             SetTimer(hwnd,1,100,0);
             break;
         }
@@ -83,7 +85,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             hdc = BeginPaint(hwnd,&ps);
             hSrcDC = GetDC(NULL);
             SetStretchBltMode(hdc,COLORONCOLOR);
-            StretchBlt(hdc,0,0,cx,cy,hSrcDC,0,0,1280,720,SRCCOPY);
+            StretchBlt(hdc,0,0,cx,cy,hSrcDC,0,0,DeskTop.right - DeskTop.left,DeskTop.bottom - DeskTop.top,SRCCOPY);
             EndPaint(hwnd,&ps);
             ReleaseDC(hwnd,hSrcDC);
             break; 
