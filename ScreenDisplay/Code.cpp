@@ -16,7 +16,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.style = CS_HREDRAW|CS_VREDRAW; 
 
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+    wc.hbrBackground = NULL;        //解决闪烁问题. 
     wc.lpszClassName = "ScreenDisplay";
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
     wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
@@ -40,7 +40,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
     
-    ::SetLayeredWindowAttributes(hwnd,(COLORREF)(COLOR_WINDOW+1),255,LWA_COLORKEY);
+    ::SetLayeredWindowAttributes(hwnd,(COLORREF)(NULL),255,LWA_COLORKEY);
     
     while(GetMessage(&msg, NULL, 0, 0))
     {
