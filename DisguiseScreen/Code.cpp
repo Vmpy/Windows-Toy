@@ -34,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
     GetWindowRect(GetDesktopWindow(),&Screen);
     GetWindowRect(FindWindow(TEXT("Shell_TrayWnd"),0),&TaskList);
     
-    hwnd = CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED,"DisguiseScreen","",WS_VISIBLE,0,-25,
+    hwnd = CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED,"DisguiseScreen","",WS_VISIBLE,-2,-25,
         Screen.right-Screen.left + 20, /* width */
         Screen.bottom-Screen.top - (TaskList.bottom - TaskList.top)+25, /* height */
         NULL,NULL,hInstance,NULL);
@@ -47,8 +47,8 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
     
     while(GetMessage(&msg,NULL,0,0))
     {
-        TranslateMessage(&msg); /* Translate key codes to chars if present */
-        DispatchMessage(&msg); /* Send it to WndProc */
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
     }
     return msg.wParam;
 }
@@ -119,7 +119,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
         
         case WM_KEYDOWN:
         {
-            if(wParam == VK_HOME)
+            if(wParam == VK_HOME)   //关闭快捷键 
             {
                 DestroyWindow(hwnd);
             }
