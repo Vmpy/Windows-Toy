@@ -21,7 +21,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
     wc.style = CS_HREDRAW|CS_VREDRAW; 
 
     wc.hbrBackground = 0;        //解决闪烁问题. 
-    wc.lpszClassName = "ScreenDisplay";
+    wc.lpszClassName = "DisguiseScreen";
     wc.hIcon = LoadIcon(NULL,IDI_APPLICATION); /* Load a standard icon */
     wc.hIconSm = LoadIcon(NULL,IDI_APPLICATION); /* use the name "A" to use the project icon */
 
@@ -32,11 +32,11 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
     }
     
     GetWindowRect(GetDesktopWindow(),&Screen);
-    GetWindowRect(FindWindow(TEXT("MSTaskListWClass"),0),&TaskList);
+    GetWindowRect(FindWindow(TEXT("Shell_TrayWnd"),0),&TaskList);
     
-    hwnd = CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED,"ScreenDisplay","ScreenDisplay",WS_VISIBLE,0,-25,
+    hwnd = CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED,"DisguiseScreen","",WS_VISIBLE,0,-25,
         Screen.right-Screen.left + 20, /* width */
-        Screen.bottom-Screen.top - (TaskList.bottom - TaskList.top) - 15, /* height */
+        Screen.bottom-Screen.top - (TaskList.bottom - TaskList.top)+25, /* height */
         NULL,NULL,hInstance,NULL);
 
     if(hwnd == NULL)
