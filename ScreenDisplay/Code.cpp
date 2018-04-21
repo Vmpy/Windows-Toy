@@ -29,8 +29,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     hwnd = CreateWindowEx(WS_EX_TOPMOST|WS_EX_LAYERED,"ScreenDisplay","ScreenDisplay",WS_VISIBLE|WS_OVERLAPPEDWINDOW,CW_USEDEFAULT, /* x */CW_USEDEFAULT, /* y */
-        640, /* width */
-        480, /* height */
+        800, /* width */
+        450, /* height */
         NULL,NULL,hInstance,NULL);
 
     if(hwnd == NULL)
@@ -38,8 +38,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
         return 0;
     }
-    
-    ::SetLayeredWindowAttributes(hwnd,0,255,LWA_ALPHA);    //客户区不再显示本窗口 
     
     while(GetMessage(&msg, NULL, 0, 0))
     {
@@ -62,6 +60,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         case WM_CREATE:
         {
             GetWindowRect(GetDesktopWindow(),&DeskTop);
+            SetLayeredWindowAttributes(hwnd,0,255,LWA_ALPHA);    //客户区不再显示本窗口 
             SetTimer(hwnd,TimerId,50,0);
             break;
         }
@@ -89,13 +88,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             ReleaseDC(hwnd,hSrcDC);
             break; 
         }
-        
-        case WM_KILLFOCUS:
-        {
-            SetFocus(hwnd);
-            break; 
-        }
-        
+          
         case WM_DESTROY:
         {
             KillTimer(hwnd,TimerId);
