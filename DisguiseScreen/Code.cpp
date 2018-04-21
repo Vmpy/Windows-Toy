@@ -1,3 +1,4 @@
+/*创建一个覆盖屏幕的窗口，显示窗口上所有的东西，导致使用者点击不了屏幕上的东西*/
 #include <windows.h>
 #include <windowsx.h> 
 
