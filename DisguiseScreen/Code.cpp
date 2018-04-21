@@ -116,6 +116,15 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
             ReleaseDC(hwnd,hSrcDC);
             break; 
         }
+        
+        case WM_KEYDOWN:
+        {
+            if(wParam == VK_HOME)
+            {
+                DestroyWindow(hwnd);
+            }
+            break;
+        } 
           
         case WM_DESTROY:
         {
