@@ -62,7 +62,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         case WM_CREATE:
         {
             GetWindowRect(GetDesktopWindow(),&DeskTop);
-            SetTimer(hwnd,TimerId,10,0);
+            SetTimer(hwnd,TimerId,50,0);
             break;
         }
         
