@@ -4,7 +4,7 @@
 const int TimerId = 1; 
 LRESULT CALLBACK WndProc(HWND,UINT,WPARAM,LPARAM);
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow)
 {
     WNDCLASSEX wc;
     HWND hwnd;
@@ -14,17 +14,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.lpfnWndProc = WndProc; /* This is where we will send messages to */
     wc.hInstance = hInstance;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hCursor = LoadCursor(NULL,IDC_ARROW);
     wc.style = CS_HREDRAW|CS_VREDRAW; 
 
     wc.hbrBackground = 0;        //解决闪烁问题. 
     wc.lpszClassName = "ScreenDisplay";
-    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
-    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
+    wc.hIcon = LoadIcon(NULL,IDI_APPLICATION); /* Load a standard icon */
+    wc.hIconSm = LoadIcon(NULL,IDI_APPLICATION); /* use the name "A" to use the project icon */
 
     if(!RegisterClassEx(&wc))
     {
-        MessageBox(NULL, "Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
+        MessageBox(NULL,"Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
         return 0;
     }
 
@@ -35,11 +35,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if(hwnd == NULL)
     {
-        MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
+        MessageBox(NULL,"Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
         return 0;
     }
     
-    while(GetMessage(&msg, NULL, 0, 0))
+    while(GetMessage(&msg,NULL,0,0))
     {
         TranslateMessage(&msg); /* Translate key codes to chars if present */
         DispatchMessage(&msg); /* Send it to WndProc */
@@ -47,7 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return msg.wParam;
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 {
     static HDC hdc;
     static HDC hSrcDC;
