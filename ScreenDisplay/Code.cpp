@@ -16,7 +16,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.style = CS_HREDRAW|CS_VREDRAW; 
 
-    wc.hbrBackground = NULL;        //解决闪烁问题. 
+    wc.hbrBackground = 0;        //解决闪烁问题. 
     wc.lpszClassName = "ScreenDisplay";
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
     wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
@@ -27,9 +27,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    hwnd = CreateWindowEx(WS_EX_TOPMOST|WS_EX_LAYERED,"ScreenDisplay","ScreenDisplay",WS_VISIBLE|WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, /* x */
-        CW_USEDEFAULT, /* y */
+    hwnd = CreateWindowEx(WS_EX_TOPMOST|WS_EX_LAYERED,"ScreenDisplay","ScreenDisplay",WS_VISIBLE|WS_OVERLAPPEDWINDOW,CW_USEDEFAULT, /* x */CW_USEDEFAULT, /* y */
         640, /* width */
         480, /* height */
         NULL,NULL,hInstance,NULL);
@@ -40,7 +38,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
     
-    ::SetLayeredWindowAttributes(hwnd,(COLORREF)(NULL),255,LWA_COLORKEY);
+    ::SetLayeredWindowAttributes(hwnd,0,255,LWA_ALPHA);    //客户区不再显示本窗口 
     
     while(GetMessage(&msg, NULL, 0, 0))
     {
@@ -54,7 +52,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     static HDC hdc;
     static HDC hSrcDC;
-    static RECT DeskTop; 
+    static RECT DeskTop,Client; 
     static PAINTSTRUCT ps;
     static int cx = 480;
     static int cy = 640;
@@ -88,6 +86,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             StretchBlt(hdc,0,0,cx,cy,hSrcDC,0,0,DeskTop.right - DeskTop.left,DeskTop.bottom - DeskTop.top,SRCCOPY);
             EndPaint(hwnd,&ps);
             ReleaseDC(hwnd,hSrcDC);
+            break; 
+        }
+        
+        case WM_KILLFOCUS:
+        {
+            SetFocus(hwnd);
             break; 
         }
         
