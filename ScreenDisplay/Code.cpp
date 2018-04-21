@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <windowsx.h> 
 
+const int TimerId = 1; 
 LRESULT CALLBACK WndProc(HWND,UINT,WPARAM,LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -61,7 +62,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         case WM_CREATE:
         {
             GetWindowRect(GetDesktopWindow(),&DeskTop);
-            SetTimer(hwnd,1,100,0);
+            SetTimer(hwnd,TimerId,10,0);
             break;
         }
         
@@ -97,7 +98,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         
         case WM_DESTROY:
         {
-            KillTimer(hwnd,1);
+            KillTimer(hwnd,TimerId);
             PostQuitMessage(0);
             break;
         }
