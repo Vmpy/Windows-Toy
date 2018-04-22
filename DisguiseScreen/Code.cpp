@@ -57,6 +57,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 {
     static HDC hdc;
     static HDC hSrcDC;
+    static HWND DesktopHwnd; 
     static RECT DeskTop,Client; 
     static PAINTSTRUCT ps;
     static int cx = 480;
@@ -109,12 +110,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
         case WM_PAINT:
         {
             hdc = BeginPaint(hwnd,&ps);
-            hSrcDC = GetDC(NULL);
+            hSrcDC = GetDC(DesktopHwnd);
             SetStretchBltMode(hdc,COLORONCOLOR);
             BitBlt(hdc,0,0,cx,cy,hSrcDC,0,0,SRCCOPY);
             EndPaint(hwnd,&ps);
-            ReleaseDC(hwnd,hSrcDC);
-            break; 
+            ReleaseDC(DesktopHwnd,hSrcDC);
+            break;
         }
         
         case WM_KEYDOWN:
