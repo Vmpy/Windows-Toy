@@ -57,8 +57,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         case WM_CREATE:
         {
             Edit = CreateWindowEx(0,"edit","",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_AUTOVSCROLL|ES_MULTILINE,0,0,300,300,hwnd,0,0,0);
-            StartButton = CreateWindowEx(0,"button","开始",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_AUTOVSCROLL|ES_MULTILINE,25,350,60,30,hwnd,(HMENU)1,0,0);
-            EndButton = CreateWindowEx(0,"button","停止",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_AUTOVSCROLL|ES_MULTILINE,25,350,60,30,hwnd,(HMENU)2,0,0);
+            StartButton = CreateWindowEx(0,"button","开始",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,25,350,60,30,hwnd,(HMENU)1,0,0);
+            EndButton = CreateWindowEx(0,"button","停止",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,160,350,60,30,hwnd,(HMENU)2,0,0);
             break; 
         }
         
@@ -82,8 +82,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         {
             if((HWND)lParam == StartButton)
             {
-                SetFocus(Edit);
-                SetTimer(hwnd,1001,500,0);
+                if(MessageBox(hwnd,"请在开始前确认:\n1.当前输入法正确.\n2.输入法输入选项正确(大小写设置).\n","提示",MB_YESNO) == IDYES)
+                {
+                    SetFocus(Edit);
+                    SetTimer(hwnd,1001,300,0);
+                }
+                else
+                {
+                    break;
+                }
             }
             else if((HWND)lParam == EndButton)
             {
