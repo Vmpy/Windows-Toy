@@ -77,16 +77,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         
         case WM_TIMER:
         {
-            switch(wParam)
+            if(GetForegroundWindow() == hwnd)
             {
-                case 1001:
+                switch(wParam)
                 {
-                    keybd_event(68,0,0,0);
-                    keybd_event(68,0,KEYEVENTF_KEYUP,0);
-                    keybd_event(VK_SPACE,0,0,0);
-                    keybd_event(VK_SPACE,0,KEYEVENTF_KEYUP,0);
-                    break;
+                    case 1001:
+                    {
+                        keybd_event(68,0,0,0);
+                        keybd_event(68,0,KEYEVENTF_KEYUP,0);
+                        keybd_event(VK_SPACE,0,0,0);
+                        keybd_event(VK_SPACE,0,KEYEVENTF_KEYUP,0);
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                KillTimer(hwnd,1001);
             }
             break; 
         }
@@ -98,7 +105,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                 if(MessageBox(hwnd,"请在开始前确认:\n1.当前输入法正确.\n2.输入法输入选项正确(大小写设置).\n","提示",MB_YESNO) == IDYES)
                 {
                     SetFocus(Edit);
-                    SetTimer(hwnd,1001,50,0);
+                    SetTimer(hwnd,1001,10,0);
                 }
                 else
                 {
