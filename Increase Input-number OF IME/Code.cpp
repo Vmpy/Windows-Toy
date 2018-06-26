@@ -17,28 +17,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     /* White, COLOR_WINDOW is just a #define for a system color, try Ctrl+Clicking it */
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wc.lpszClassName = "WindowClass";
+    wc.lpszClassName = "IME INCRESE-NUM";
     wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
     wc.hIconSm         = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
 
-    if(!RegisterClassEx(&wc)) {
+    if(!RegisterClassEx(&wc))
+    {
         MessageBox(NULL, "Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
         return 0;
     }
 
-    hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"WindowClass","Caption",WS_VISIBLE|WS_OVERLAPPEDWINDOW^WS_THICKFRAME^WS_MAXIMIZEBOX,
+    hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"IME INCRESE-NUM","输入法刷字数",WS_VISIBLE|WS_OVERLAPPEDWINDOW^WS_THICKFRAME^WS_MAXIMIZEBOX,
         CW_USEDEFAULT, /* x */
         CW_USEDEFAULT, /* y */
-        300, /* width */
+        305, /* width */
         600, /* height */
         NULL,NULL,hInstance,NULL);
 
-    if(hwnd == NULL) {
+    if(hwnd == NULL)
+    {
         MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
         return 0;
     }
 
-    while(GetMessage(&msg, NULL, 0, 0) > 0) { /* If no error is received... */
+    while(GetMessage(&msg, NULL, 0, 0))
+    {
         TranslateMessage(&msg); /* Translate key codes to chars if present */
         DispatchMessage(&msg); /* Send it to WndProc */
     }
@@ -51,14 +54,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     static HWND Edit;
     static HWND StartButton;
     static HWND EndButton;
-     
+    static HWND ClearButton;
+    
     switch(Message)
     {
         case WM_CREATE:
         {
+            HFONT hFont = CreateFont(22,8,0,0,400,FALSE, FALSE, FALSE,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY,FF_DONTCARE, TEXT("微软雅黑"));
+            
             Edit = CreateWindowEx(0,"edit","",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_AUTOVSCROLL|ES_MULTILINE,0,0,300,300,hwnd,0,0,0);
             StartButton = CreateWindowEx(0,"button","开始",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,25,350,60,30,hwnd,(HMENU)1,0,0);
             EndButton = CreateWindowEx(0,"button","停止",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,185,350,60,30,hwnd,(HMENU)2,0,0);
+            ClearButton = CreateWindowEx(0,"button","清除",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,100,450,60,30,hwnd,(HMENU)3,0,0);
+            
+            SendMessage(Edit,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(StartButton,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(EndButton,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(ClearButton,WM_SETFONT,(WPARAM)hFont,0);
+            
             break; 
         }
         
@@ -95,6 +108,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             else if((HWND)lParam == EndButton)
             {
                 KillTimer(hwnd,1001);
+            }
+            else if((HWND)lParam == ClearButton)
+            {
+                SetWindowText(Edit,"");
             }
             break;
         }
