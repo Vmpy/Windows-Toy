@@ -60,12 +60,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     {
         case WM_CREATE:
         {
-            HFONT hFont = CreateFont(22,8,0,0,400,FALSE, FALSE, FALSE,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY,FF_DONTCARE, TEXT("微软雅黑"));
+            HFONT hFont = CreateFont(22,8,0,0,400,FALSE, FALSE, FALSE,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_CHARACTER_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,TEXT("微软雅黑"));
             
             Edit = CreateWindowEx(0,"edit","",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_AUTOVSCROLL|ES_MULTILINE,0,0,300,300,hwnd,0,0,0);
             StartButton = CreateWindowEx(0,"button","开始",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,25,350,60,30,hwnd,(HMENU)1,0,0);
             EndButton = CreateWindowEx(0,"button","停止",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,185,350,60,30,hwnd,(HMENU)2,0,0);
-            ClearButton = CreateWindowEx(0,"button","清除",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,100,450,60,30,hwnd,(HMENU)3,0,0);
+            ClearButton = CreateWindowEx(0,"button","清除",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,108,450,60,30,hwnd,(HMENU)3,0,0);
             
             SendMessage(Edit,WM_SETFONT,(WPARAM)hFont,0);
             SendMessage(StartButton,WM_SETFONT,(WPARAM)hFont,0);
@@ -112,6 +112,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             else if((HWND)lParam == ClearButton)
             {
                 SetWindowText(Edit,"");
+                SetFocus(Edit);
             }
             break;
         }
