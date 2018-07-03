@@ -6,7 +6,7 @@ using namespace Gdiplus;
 
 
 LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
-bool DrawImage(HDC,const wchar_t*);
+bool DrawImage(OneSnow,Bitmap*,const wchar_t*);
 
 TCHAR szClassName[ ] = TEXT("SnowDeskTop");
 
@@ -44,7 +44,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
     /* The class is registered, let's create the program*/
     hwnd = CreateWindowEx (0,                   /* Extended possibilites for variation */
            szClassName,         /* Classname */
-           TEXT("Code::Blocks Template Windows App"),       /* Title Text */
+           TEXT("SnowDeskTop"),       /* Title Text */
            WS_OVERLAPPEDWINDOW, /* default window */
            CW_USEDEFAULT,       /* Windows decides the position */
            CW_USEDEFAULT,       /* where the window ends up on the screen */
@@ -57,7 +57,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
            );
 
     /* Make the window visible on the screen */
-    ShowWindow (hwnd, nCmdShow);
+    ShowWindow (hwnd,SW_HIDE);
 
     /* Run the message loop. It will run until GetMessage() returns 0 */
     while (GetMessage (&messages, NULL, 0, 0))
@@ -79,51 +79,97 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static HDC hdc;
+    static OneSnow Snow[10];
+    static int cx = GetSystemMetrics(SM_CXSCREEN);
+    static int cy = GetSystemMetrics(SM_CYSCREEN);
+    static HWND Desktop;
+    static int COUNT = 0;
+
+    Desktop = FindWindow("Progman", NULL);
+    Desktop = GetWindow(Desktop, GW_CHILD);
+    Desktop = GetWindow(Desktop, GW_CHILD);
+
     switch (message)
     {
         case WM_TIMER:
         {
-            hdc = GetDC(NULL);
-            DrawImage(hdc,L"Snow1.png");
-            InvalidateRect(GetDesktopWindow(),0,true);
-            ReleaseDC(NULL,hdc);
+            COUNT++;
+            if(COUNT%2 == 0)
+            {
+                for(int i = 0;i < 25;i++)
+                    InvalidateRect(Desktop,&Snow[i].RedrawRect,false);
+            }
+            hdc = GetDC(Desktop);
+            Bitmap Drawmap_(cx,cy);
+            Graphics gr(hdc);
+            for(int i = 0;i < 25;i++)
+            {
+                switch(Snow[i].Type)
+                {
+                    case 1:
+                    {
+                        DrawImage(Snow[i],&Drawmap_,L"Snow1.png");
+                        break;
+                    }
+                    case 2:
+                    {
+                        DrawImage(Snow[i],&Drawmap_,L"Snow2.png");
+                        break;
+                    }
+                    case 3:
+                    {
+                        DrawImage(Snow[i],&Drawmap_,L"Snow3.png");
+                        break;
+                    }
+                    case 4:
+                    {
+                        DrawImage(Snow[i],&Drawmap_,L"Snow4.png");
+                        break;
+                    }
+                    case 5:
+                    {
+                        DrawImage(Snow[i],&Drawmap_,L"Snow5.png");
+                        break;
+                    }
+                    case 6:
+                    {
+                        DrawImage(Snow[i],&Drawmap_,L"Snow1.png");
+                        break;
+                    }
+                }
+                Snow[i].Move();
+            }
+            gr.DrawImage(&Drawmap_,0,0);
+
+            ReleaseDC(Desktop,hdc);
             break;
         }
         case WM_CREATE:
         {
-            SetTimer(hwnd,1,150,0);
+            SetTimer(hwnd,1,10,0);
             break;
         }
         case WM_DESTROY:
         {
-            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             KillTimer(hwnd,1);
+            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             break;
         }
-        default:                      /* for messages that we don't deal with */
+        default:
             return DefWindowProc(hwnd,message,wParam,lParam);
     }
     return 0;
 }
 
-bool DrawImage(HDC hdc,const wchar_t* FileName)
+bool DrawImage(OneSnow Snow,Bitmap* bitmap,const wchar_t* FileName)
 {
-    OneSnow Snow;
-    int  cx   =   GetSystemMetrics(SM_CXSCREEN);
-    int  cy   =   GetSystemMetrics(SM_CYSCREEN);
-
     /*加载雪花图片*/
     Image SnowImage(FileName);
     if(SnowImage.GetLastStatus() != Status::Ok)
     {
         return false;
     }
-    Graphics Graph(hdc);
-
-    Snow.x = rand()%cx;
-    Snow.y = rand()%cy;
-    Snow.Width = Snow.Height = rand()%64+16;
-
+    Graphics Graph(bitmap);
     Graph.DrawImage(&SnowImage,RectF(Snow.x,Snow.y,Snow.Width,Snow.Height));
     return true;
 }
