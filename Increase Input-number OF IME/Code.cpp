@@ -1,138 +1,155 @@
+#if defined(UNICODE) && !defined(_UNICODE)
+    #define _UNICODE
+#elif defined(_UNICODE) && !defined(UNICODE)
+    #define UNICODE
+#endif
+
+#include <tchar.h>
+#include <stdlib.h>
 #include <windows.h>
 
-LRESULT CALLBACK WndProc(HWND,UINT,WPARAM,LPARAM); 
+LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+/*  Make the class name into a global variable  */
+TCHAR szClassName[ ] = _T("MouseClick");
+
+int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszArgument,int nCmdShow)
 {
-    WNDCLASSEX wc; /* A properties struct of our window */
-    HWND hwnd; /* A 'HANDLE', hence the H, or a pointer to our window */
-    MSG msg; /* A temporary location for all messages */
+    HWND hwnd;               /* This is the handle for our window */
+    MSG messages;            /* Here messages to the application are saved */
+    WNDCLASSEX wincl;        /* Data structure for the windowclass */
 
-    /* zero out the struct and set the stuff we want to modify */
-    memset(&wc,0,sizeof(wc));
-    wc.cbSize         = sizeof(WNDCLASSEX);
-    wc.lpfnWndProc     = WndProc; /* This is where we will send messages to */
-    wc.hInstance     = hInstance;
-    wc.hCursor         = LoadCursor(NULL, IDC_ARROW);
-    
-    /* White, COLOR_WINDOW is just a #define for a system color, try Ctrl+Clicking it */
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wc.lpszClassName = "IME INCRESE-NUM";
-    wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
-    wc.hIconSm         = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
+    /* The Window structure */
+    wincl.hInstance = hThisInstance;
+    wincl.lpszClassName = szClassName;
+    wincl.lpfnWndProc = WindowProcedure;      /* This function is called by windows */
+    wincl.style = CS_DBLCLKS;                 /* Catch double-clicks */
+    wincl.cbSize = sizeof (WNDCLASSEX);
 
-    if(!RegisterClassEx(&wc))
-    {
-        MessageBox(NULL, "Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
+    /* Use default icon and mouse-pointer */
+    wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
+    wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
+    wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wincl.lpszMenuName = NULL;                 /* No menu */
+    wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
+    wincl.cbWndExtra = 0;                      /* structure or the window instance */
+    /* Use Windows's default colour as the background of the window */
+    wincl.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+
+    /* Register the window class, and if it fails quit the program */
+    if (!RegisterClassEx (&wincl))
         return 0;
-    }
 
-    hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"IME INCRESE-NUM","输入法刷字数",WS_VISIBLE|WS_OVERLAPPEDWINDOW^WS_THICKFRAME^WS_MAXIMIZEBOX,
-        CW_USEDEFAULT, /* x */
-        CW_USEDEFAULT, /* y */
-        305, /* width */
-        600, /* height */
-        NULL,NULL,hInstance,NULL);
+    /* The class is registered, let's create the program*/
+    hwnd = CreateWindowEx (
+           WS_EX_TOPMOST,                   /* Extended possibilites for variation */
+           szClassName,         /* Classname */
+           _T("MouseClick"),       /* Title Text */
+           WS_OVERLAPPEDWINDOW^WS_THICKFRAME, /* default window */
+           CW_USEDEFAULT,       /* Windows decides the position */
+           CW_USEDEFAULT,       /* where the window ends up on the screen */
+           600,                 /* The programs width */
+           350,                 /* and height in pixels */
+           HWND_DESKTOP,        /* The window is a child-window to desktop */
+           NULL,                /* No menu */
+           hThisInstance,       /* Program Instance handler */
+           NULL                 /* No Window Creation data */
+           );
 
-    if(hwnd == NULL)
+    ShowWindow (hwnd, nCmdShow);
+    RegisterHotKey(hwnd,1,MOD_CONTROL,'S');	// Ctrl + S
+    RegisterHotKey(hwnd,2,MOD_CONTROL,'E');	// Ctrl + S
+
+    while (GetMessage (&messages, NULL, 0, 0))
     {
-        MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
-        return 0;
+        TranslateMessage(&messages);
+        DispatchMessage(&messages);
     }
 
-    while(GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg); /* Translate key codes to chars if present */
-        DispatchMessage(&msg); /* Send it to WndProc */
-    }
-    return msg.wParam;
+    return messages.wParam;
 }
 
-/* This is where all the input to the window goes to */
-LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static HWND Edit;
-    static HWND StartButton;
+    static HWND ChoiceGroupBox;
+    static HWND RadioButtonLeft;
+    static HWND RadioButtonMid;
+    static HWND RadioButtonRight;
+
+    static HWND OkButton;
     static HWND EndButton;
-    static HWND ClearButton;
-    
-    switch(Message)
+    static HWND TimeEdit;
+    static HWND TextTime;
+
+    int aiElements[] ={COLOR_BTNFACE};
+
+    DWORD aColors[] ={RGB(255,255,255)};
+
+    switch (message)
     {
         case WM_CREATE:
         {
-            HFONT hFont = CreateFont(22,8,0,0,400,FALSE, FALSE, FALSE,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_CHARACTER_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,TEXT("微软雅黑"));
-            
-            Edit = CreateWindowEx(0,"edit","",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_AUTOVSCROLL|ES_MULTILINE,0,0,300,300,hwnd,0,0,0);
-            StartButton = CreateWindowEx(0,"button","开始",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,25,350,60,30,hwnd,(HMENU)1,0,0);
-            EndButton = CreateWindowEx(0,"button","停止",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,185,350,60,30,hwnd,(HMENU)2,0,0);
-            ClearButton = CreateWindowEx(0,"button","清除",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON,108,450,60,30,hwnd,(HMENU)3,0,0);
-            
-            SendMessage(Edit,WM_SETFONT,(WPARAM)hFont,0);
-            SendMessage(StartButton,WM_SETFONT,(WPARAM)hFont,0);
+            HFONT hFont = CreateFont(20,7,0,0,400,FALSE, FALSE, FALSE,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_CHARACTER_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,TEXT("微软雅黑"));
+            SetSysColors(1,aiElements,aColors);
+            ChoiceGroupBox = CreateWindowEx(NULL,"BUTTON","按键选择",WS_CHILD|WS_VISIBLE|BS_GROUPBOX,60,45,500,85,hwnd,(HMENU)1,0,0);
+            RadioButtonLeft = CreateWindowEx(NULL,"BUTTON","左键",WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON,5,30,165,40,ChoiceGroupBox,(HMENU)2,0,0);
+            RadioButtonMid = CreateWindowEx(NULL,"BUTTON","中键",WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON,170,30,165,40,ChoiceGroupBox,(HMENU)3,0,0);
+            RadioButtonRight = CreateWindowEx(NULL,"BUTTON","右键",WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON,335,30,160,40,ChoiceGroupBox,(HMENU)4,0,0);
+            TextTime = CreateWindowEx(NULL,"STATIC","点击时间间隔(毫秒):",WS_CHILD|WS_VISIBLE|SS_CENTERIMAGE|SS_CENTER,60,180,135,20,hwnd,(HMENU)5,0,0);
+            TimeEdit = CreateWindowEx(NULL,"EDIT","",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_NUMBER|ES_AUTOHSCROLL,200,180,135,25,hwnd,(HMENU)6,0,0);
+            OkButton = CreateWindowEx(NULL,"BUTTON","开始(S键)",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON|BS_FLAT,410,180,80,30,hwnd,(HMENU)7,0,0);
+            EndButton = CreateWindowEx(NULL,"BUTTON","结束(E键)",WS_CHILD|WS_VISIBLE|WS_BORDER|BS_PUSHBUTTON|BS_FLAT,410,245,80,30,hwnd,(HMENU)8,0,0);
+
+            SendMessage(ChoiceGroupBox,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(RadioButtonLeft,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(RadioButtonMid,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(RadioButtonRight,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(TextTime,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(TimeEdit,WM_SETFONT,(WPARAM)hFont,0);
+            SendMessage(OkButton,WM_SETFONT,(WPARAM)hFont,0);
             SendMessage(EndButton,WM_SETFONT,(WPARAM)hFont,0);
-            SendMessage(ClearButton,WM_SETFONT,(WPARAM)hFont,0);
-            
-            break; 
+            break;
         }
-        
-        case WM_TIMER:
+
+        case WM_HOTKEY:
         {
-            if(GetForegroundWindow() == hwnd)
+            switch(wParam)
             {
-                switch(wParam)
+                case 1:
                 {
-                    case 1001:
-                    {
-                        keybd_event(68,0,0,0);
-                        keybd_event(68,0,KEYEVENTF_KEYUP,0);
-                        keybd_event(VK_SPACE,0,0,0);
-                        keybd_event(VK_SPACE,0,KEYEVENTF_KEYUP,0);
-                        break;
-                    }
+                    char Time[10];
+                    SendMessage(TimeEdit,WM_GETTEXT,(WPARAM)10,(LPARAM)Time);
+                    UINT TimeOut = atoi(Time);
+                    SetTimer(hwnd,1,TimeOut,0);
+                    break;
                 }
-            }
-            else
-            {
-                KillTimer(hwnd,1001);
-            }
-            break; 
-        }
-        
-        case WM_COMMAND:
-        {
-            if((HWND)lParam == StartButton)
-            {
-                if(MessageBox(hwnd,"请在开始前确认:\n1.当前输入法正确.\n2.输入法输入选项正确(大小写设置).\n","提示",MB_YESNO) == IDYES)
+                case 2:
                 {
-                    SetFocus(Edit);
-                    SetTimer(hwnd,1001,10,0);
-                }
-                else
-                {
+                    KillTimer(hwnd,1);
                     break;
                 }
             }
-            else if((HWND)lParam == EndButton)
+            break;
+        }
+
+        case WM_TIMER:
+        {
+            if(SendMessage(RadioButtonLeft,BM_GETCHECK,0,0))
             {
-                KillTimer(hwnd,1001);
-            }
-            else if((HWND)lParam == ClearButton)
-            {
-                SetWindowText(Edit,"");
-                SetFocus(Edit);
+                mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,NULL);
+                mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,NULL);
+                break;
             }
             break;
         }
-        
+
         case WM_DESTROY:
         {
-            PostQuitMessage(0);
+            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             break;
         }
-        
-        /* All other messages (a lot of them) are processed using default procedures */
-        default:
-            return DefWindowProc(hwnd, Message, wParam, lParam);
+        default:                      /* for messages that we don't deal with */
+            return DefWindowProc (hwnd, message, wParam, lParam);
     }
     return 0;
 }
