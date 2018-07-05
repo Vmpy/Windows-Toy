@@ -155,6 +155,12 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 mouse_event(MOUSEEVENTF_RIGHTUP,0,0,0,0);
                 break;
             }
+            else
+            {
+                KillTimer(hwnd,1);
+                MessageBox(hwnd,"  请填写未填写完毕的值.","提示",MB_OK|MB_ICONINFORMATION);
+                break;
+            }
             break;
         }
 
