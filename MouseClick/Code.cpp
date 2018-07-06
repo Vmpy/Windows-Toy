@@ -60,7 +60,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
 
     //注册热键
     RegisterHotKey(hwnd,1,MOD_CONTROL,'S');	// Ctrl + S
-    RegisterHotKey(hwnd,2,MOD_CONTROL,'E');	// Ctrl + S
+    RegisterHotKey(hwnd,2,MOD_CONTROL,'E');	// Ctrl + E
 
     while (GetMessage (&messages,0,0,0))
     {
