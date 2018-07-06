@@ -86,6 +86,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     //数据用于更改系统颜色.
     int aiElements[] ={COLOR_BTNFACE};
     DWORD aColors[] ={RGB(255,255,255)};
+    static int UaiElements[] ={COLOR_BTNFACE};
+    static DWORD UaColors[] = {GetSysColor(COLOR_BTNFACE)};
 
     switch (message)
     {
@@ -169,6 +171,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             //解除注册的热键.
             UnregisterHotKey(hwnd,1);
             UnregisterHotKey(hwnd,2);
+            SetSysColors(1,UaiElements,UaColors);
             PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             break;
         }
