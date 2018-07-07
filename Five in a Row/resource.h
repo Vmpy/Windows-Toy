@@ -1,0 +1,3 @@
+#define IDR_FIAR_MENU 1001
+
+#define ID_RESTART 2001
