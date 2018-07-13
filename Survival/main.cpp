@@ -2,12 +2,16 @@
 #include <cstdio>
 
 #include "Data.h"
+#include "Functions.h"
 
 using namespace std;
 
+Human Me;
+NatureEvent NE;
+
 int main()
 {
-    Human Me;
-    Me.m_Asset.m_Animal.Header = 0;
+    FirstMenu(Me);
+    DisplayInformation(Me,NE);
     return 0;
 }
