@@ -1,6 +1,8 @@
 #ifndef DATA_H_INCLUDED
 #define DATA_H_INCLUDED
 
+#include <cstdlib>
+
 struct Animals
 {
     char Name[20];
@@ -20,6 +22,8 @@ class Human
     float BMI;
     bool Sex;
     unsigned int Age;
+
+    enum PlaceEn {Home,Forest,River,MonsterIsland} m_Place = Home;
 
     class Asset
     {
@@ -43,8 +47,9 @@ class Human
         };
         class Weapon
         {
-            enum WeaponType {Gun,Sword,Fist} m_Type = Sword;
+            enum WeaponType {Gun,Sword,Fist} m_Type = Fist;
             int LifeTime = 0;
+            int Power = 5;
         };
 
         Land m_Land;
@@ -65,5 +70,31 @@ class NatureEvent
     int Temperature = 15;
 };
 
+class Place
+{
+    class Forest
+    {
+        bool Trees[200];
+        bool Sheep[20];
+        bool Bull[20];
+        bool Horse[10];
+    };
+    class River
+    {
+        bool Fish[50];
+        bool Snake[10];
+    };
+    class MonsterIsland
+    {
+        bool Zombie[10];
+        bool Wolves[10];
+        bool Snake[10];
+        bool WaterMonster[2];
+    };
+
+    Forest m_Forest;
+    River m_River;
+    MonsterIsland m_MonsterIsland;
+};
 
 #endif // DATA_H_INCLUDED
