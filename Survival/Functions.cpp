@@ -24,6 +24,7 @@ void InitPlayer(Human& Player)
     cin >> Player.Weight;
 
     Player.BMI = BMI(Player.Height,Player.Weight);
+    Player.Sex = rand()%2;
     Player.Power = 10;
     Player.Life = 120;
 }
@@ -130,8 +131,15 @@ void DisplayInformation(Human& Player,NatureEvent& NE)
     cout << "体重:" << Player.Weight << "kg" << endl;
     cout << "预计寿命:" << Player.Life << "年" << endl;
     cout << "性别:" << flush;
-    Player.Sex?cout << "男":cout << "女";
+    Player.Sex ? cout << "男" : cout << "女";
     cout << "\n";
 
-
+    cout << "位置:" << flush;
+    switch(Player.m_Place)
+    {
+        case Player.Home:cout << "家园" << endl;break;
+        case Player.Forest:cout << "森林" << endl;break;
+        case Player.River:cout << "河边" << endl;break;
+        case Player.MonsterIsland:cout << "怪物岛" << endl;break;
+    }
 }
