@@ -28,12 +28,12 @@ class Human
         {
             public:
             int Area = 0; //平方米
-            enum dampness {Dry,Mid,Wet} m_Dampness;
+            enum dampness {Dry,Mid,Wet} m_Dampness = Mid;
         };
         class Animal
         {
             public:
-            Animals * Header;
+            Animals * Header = nullptr;
         };
         class House
         {
@@ -59,10 +59,10 @@ class Human
 class NatureEvent
 {
     public:
-    enum Time {Morning,Noon,Afternoon,night} m_Time;
-    enum Season {Spring,Summer,Fall,Winter} m_Season;
-    enum dampness {Dry,Mid,Wet} m_Dampness;
-    int Temperature;
+    enum Time {Morning,Noon,Afternoon,Night} m_Time = Morning;
+    enum Season {Spring,Summer,Fall,Winter} m_Season = Spring;
+    enum dampness {Dry,Mid,Wet} m_Dampness = Mid;
+    int Temperature = 15;
 };
 
 
