@@ -11,14 +11,17 @@
 
 using namespace Gdiplus;
 
-/*  Declare Windows procedure  */
+PlaneClass Plane;
+FlyingMonsterClass Monster[6];
+int OutPutCount = 0;
+
 LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
 
-void DrawPicture(HDC,char*,int,int,int,int);
+void DrawPicture(HDC,wchar_t*,int,int,int,int);
 
 
 /*  Make the class name into a global variable  */
-TCHAR szClassName[ ] = _T("CodeBlocksWindowsApp");
+TCHAR szClassName[ ] = _T("PlaneHit");
 
 int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszArgument,int nCmdShow)
 {
@@ -58,7 +61,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
     hwnd = CreateWindowEx (
            0,                   /* Extended possibilites for variation */
            szClassName,         /* Classname */
-           _T("Code::Blocks Template Windows App"),       /* Title Text */
+           _T("PlaneHit"),       /* Title Text */
            WS_OVERLAPPEDWINDOW, /* default window */
            CW_USEDEFAULT,       /* Windows decides the position */
            CW_USEDEFAULT,       /* where the window ends up on the screen */
@@ -88,24 +91,70 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
 }
 
 
-/*  This functio00n is called by the Windows function DispatchMessage()  */
+/*  This function is called by the Windows function DispatchMessage()  */
 
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)                  /* handle the messages */
     {
-        case WM_CREATE:
+        case WM_TIMER:
         {
+            Plane.FillBullet();
+            HDC hdc = GetDC(hwnd);
 
+            if(OutPutCount % 5 == 0)
+            {
+                Plane.Bullet[OutPutCount/5-1].IsOutPut = true;
+            }
+            OutPutCount++;
+            if(OutPutCount > 25)
+            {
+                OutPutCount = 0;
+            }
+            Plane.ReFillBullet();
+            Plane.MoveBullet();
+            InvalidateRect(hwnd,0,true);
+            ReleaseDC(hwnd,hdc);
             break;
         }
+
+        case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd,&ps);
+            DrawPicture(hdc,Plane.PngName,Plane.x,Plane.y,Plane.Width,Plane.Height);
+
+            DrawPicture(hdc,Plane.Bullet[0].PngName,Plane.Bullet[0].x,Plane.Bullet[0].y,Plane.Bullet[0].width,Plane.Bullet[0].height);
+            DrawPicture(hdc,Plane.Bullet[1].PngName,Plane.Bullet[1].x,Plane.Bullet[1].y,Plane.Bullet[1].width,Plane.Bullet[1].height);
+            DrawPicture(hdc,Plane.Bullet[2].PngName,Plane.Bullet[2].x,Plane.Bullet[2].y,Plane.Bullet[2].width,Plane.Bullet[2].height);
+            DrawPicture(hdc,Plane.Bullet[3].PngName,Plane.Bullet[3].x,Plane.Bullet[3].y,Plane.Bullet[3].width,Plane.Bullet[3].height);
+            DrawPicture(hdc,Plane.Bullet[4].PngName,Plane.Bullet[4].x,Plane.Bullet[4].y,Plane.Bullet[4].width,Plane.Bullet[4].height);
+
+            EndPaint(hwnd,&ps);
+            break;
+        }
+
+        case WM_CREATE:
+        {
+            SetTimer(hwnd,1,100,0);
+            break;
+        }
+
+        case WM_KEYDOWN:
+        {
+            Plane.Move(wParam);
+            InvalidateRect(hwnd,0,true);
+            break;
+        }
+
         case WM_DESTROY:
+        {
             PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             break;
+        }
         default:                      /* for messages that we don't deal with */
             return DefWindowProc (hwnd, message, wParam, lParam);
     }
-
     return 0;
 }
 
