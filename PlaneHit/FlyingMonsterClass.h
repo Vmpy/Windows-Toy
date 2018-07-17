@@ -13,10 +13,14 @@ class FlyingMonsterClass
     int Width = 50;
     int Height = 50;
     int HP = 25;
-    wchar_t* PngName = (wchar_t*)L"Target.png";
+    wchar_t* PngName = (wchar_t*)L"Res\\Target.png";
     bool IsDead = false;
 
-    FlyingMonsterClass(void){}
+    FlyingMonsterClass(void)
+    {
+        x = rand()%750;
+        y = rand()%550;
+    }
 
     void Move(int X,int Y)
     {
@@ -57,6 +61,20 @@ class FlyingMonsterClass
         if(IntersectRect(&Tmp,&rcSelf,&rcBullet))
         {
             IsDead = true;
+        }
+
+        if(HP <= 0)
+        {
+            IsDead = true;
+        }
+    }
+
+    void ReLive(void)
+    {
+        if(IsDead)
+        {
+            x = rand()%750;
+            y = rand()%550;
         }
     }
 };
