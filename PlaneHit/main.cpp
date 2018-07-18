@@ -50,8 +50,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
     wincl.cbWndExtra = 0;                      /* structure or the window instance */
     /* Use Windows's default colour as the background of the window */
 
-    HBITMAP Backgroud = (HBITMAP)LoadImage(hThisInstance,"Res//sky.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-    wincl.hbrBackground = CreatePatternBrush(Backgroud);
+    wincl.hbrBackground = 0;//CreatePatternBrush(Backgroud);
 
     /* Register the window class, and if it fails quit the program */
     if (!RegisterClassEx (&wincl))
@@ -95,26 +94,68 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
 
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static int cxClient;
+    static int cyClient;
+    static HDC hDCBuffer;
+    static HBITMAP hBitmap;
     switch (message)                  /* handle the messages */
     {
+        case WM_SIZE:
+        {
+            cxClient = LOWORD(lParam);
+            cyClient = HIWORD(lParam);
+            break;
+        }
+
         case WM_TIMER:
         {
             Plane.FillBullet();
             HDC hdc = GetDC(hwnd);
 
-            if(OutPutCount % 5 == 0)
+            if(OutPutCount % 5 == 0 && OutPutCount >= 5)
             {
                 Plane.Bullet[OutPutCount/5-1].IsOutPut = true;
             }
             OutPutCount++;
-            if(OutPutCount > 25)
+            if(OutPutCount > 30)
             {
                 OutPutCount = 0;
             }
+
             Plane.ReFillBullet();
             Plane.MoveBullet();
+
+            for(int i = 0;i < 6;i++)
+            {
+                Plane.Destroyed(Monster[i]);
+                if(Plane.IsDead)
+                {
+                    KillTimer(hwnd,1);
+                    DrawPicture(hdc,(wchar_t*)L"Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
+                    InvalidateRect(hwnd,0,true);
+                    MessageBox(hwnd,"您已被击中!","游戏结束",MB_OK);
+                    return 0;
+                }
+            }
+
+            for(int i = 0;i < 6;i++)
+            {
+                Monster[i].Move(Plane.x,Plane.y);
+                for(int j = 0;j < 6;j++)
+                {
+                    Monster[i].Destroyed(Plane.Bullet[j]);
+                }
+                if(Monster[i].IsDead)
+                {
+                    Monster[i].ReLive(Plane.x,Plane.y,Plane.Width,Plane.Height);
+                }
+            }
+
+
             InvalidateRect(hwnd,0,true);
+
             ReleaseDC(hwnd,hdc);
+
             break;
         }
 
@@ -122,13 +163,28 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd,&ps);
-            DrawPicture(hdc,Plane.PngName,Plane.x,Plane.y,Plane.Width,Plane.Height);
+            hDCBuffer = CreateCompatibleDC(hdc);
+            hBitmap = (HBITMAP)LoadImage(0,"Res//sky.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+            SelectObject(hDCBuffer,hBitmap);
 
-            DrawPicture(hdc,Plane.Bullet[0].PngName,Plane.Bullet[0].x,Plane.Bullet[0].y,Plane.Bullet[0].width,Plane.Bullet[0].height);
-            DrawPicture(hdc,Plane.Bullet[1].PngName,Plane.Bullet[1].x,Plane.Bullet[1].y,Plane.Bullet[1].width,Plane.Bullet[1].height);
-            DrawPicture(hdc,Plane.Bullet[2].PngName,Plane.Bullet[2].x,Plane.Bullet[2].y,Plane.Bullet[2].width,Plane.Bullet[2].height);
-            DrawPicture(hdc,Plane.Bullet[3].PngName,Plane.Bullet[3].x,Plane.Bullet[3].y,Plane.Bullet[3].width,Plane.Bullet[3].height);
-            DrawPicture(hdc,Plane.Bullet[4].PngName,Plane.Bullet[4].x,Plane.Bullet[4].y,Plane.Bullet[4].width,Plane.Bullet[4].height);
+            DrawPicture(hDCBuffer,Plane.PngName,Plane.x,Plane.y,Plane.Width,Plane.Height);
+
+            DrawPicture(hDCBuffer,Plane.Bullet[0].PngName,Plane.Bullet[0].x,Plane.Bullet[0].y,Plane.Bullet[0].width,Plane.Bullet[0].height);
+            DrawPicture(hDCBuffer,Plane.Bullet[1].PngName,Plane.Bullet[1].x,Plane.Bullet[1].y,Plane.Bullet[1].width,Plane.Bullet[1].height);
+            DrawPicture(hDCBuffer,Plane.Bullet[2].PngName,Plane.Bullet[2].x,Plane.Bullet[2].y,Plane.Bullet[2].width,Plane.Bullet[2].height);
+            DrawPicture(hDCBuffer,Plane.Bullet[3].PngName,Plane.Bullet[3].x,Plane.Bullet[3].y,Plane.Bullet[3].width,Plane.Bullet[3].height);
+            DrawPicture(hDCBuffer,Plane.Bullet[4].PngName,Plane.Bullet[4].x,Plane.Bullet[4].y,Plane.Bullet[4].width,Plane.Bullet[4].height);
+            if(Plane.IsDead)
+            {
+                DrawPicture(hDCBuffer,(wchar_t*)L"Res\\Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
+            }
+            for(int i = 0; i < 6;i++)
+            {
+                DrawPicture(hDCBuffer,Monster[i].PngName,Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
+            }
+
+
+            BitBlt(hdc,0,0,cxClient,cyClient,hDCBuffer,0,0,SRCCOPY);
 
             EndPaint(hwnd,&ps);
             break;
@@ -136,14 +192,13 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
         case WM_CREATE:
         {
-            SetTimer(hwnd,1,100,0);
+            SetTimer(hwnd,1,1,0);
             break;
         }
 
         case WM_KEYDOWN:
         {
             Plane.Move(wParam);
-            InvalidateRect(hwnd,0,true);
             break;
         }
 
