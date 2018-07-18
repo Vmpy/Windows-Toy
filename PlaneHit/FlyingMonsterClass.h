@@ -2,7 +2,6 @@
 #define FLYINGMONSTERCLASS_H_INCLUDED
 
 #include <windows.h>
-#include "PlaneClass.h"
 #include "BulletClass.h"
 
 class FlyingMonsterClass
@@ -69,12 +68,35 @@ class FlyingMonsterClass
         }
     }
 
-    void ReLive(void)
+    void ReLive(int X,int Y,int WIDTH,int HEIGHT)
     {
-        if(IsDead)
+        while(IsDead)
         {
             x = rand()%750;
             y = rand()%550;
+            RECT rcSelf;
+            RECT rcPlane;
+            RECT Tmp;
+
+            rcSelf.left = x;
+            rcSelf.top = y;
+            rcSelf.right = x+Width;
+            rcSelf.bottom = y+Height;
+
+            rcPlane.left = X;
+            rcPlane.top = Y;
+            rcPlane.right = X+WIDTH;
+            rcPlane.bottom = Y+HEIGHT;
+
+            if(IntersectRect(&Tmp,&rcSelf,&rcPlane))
+            {
+                continue;
+            }
+            else
+            {
+                IsDead = false;
+                break;
+            }
         }
     }
 };
