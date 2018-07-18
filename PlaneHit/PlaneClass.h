@@ -1,223 +1,128 @@
-#if defined(UNICODE) && !defined(_UNICODE)
-    #define _UNICODE
-#elif defined(_UNICODE) && !defined(UNICODE)
-    #define UNICODE
-#endif
+#ifndef PLANECLASS_H_INCLUDED
+#define PLANECLASS_H_INCLUDED
 
-#include <tchar.h>
 #include <windows.h>
-#include <gdiplus.h>
-#include "Data.h"
+#include "FlyingMonsterClass.h"
+#include "BulletClass.h"
 
-using namespace Gdiplus;
-
-PlaneClass Plane;
-FlyingMonsterClass Monster[6];
-int OutPutCount = 0;
-
-LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
-
-void DrawPicture(HDC,wchar_t*,int,int,int,int);
-
-
-/*  Make the class name into a global variable  */
-TCHAR szClassName[ ] = _T("PlaneHit");
-
-int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszArgument,int nCmdShow)
+class PlaneClass
 {
-    HWND hwnd;               /* This is the handle for our window */
-    MSG messages;            /* Here messages to the application are saved */
-    WNDCLASSEX wincl;        /* Data structure for the windowclass */
+    public:
+    int x = 400-100;
+    int y = 450;
+    int Width = 100;
+    int Height = 100;
+    wchar_t* PngName = (wchar_t*)L"Res\\Plane.png";
+    int HP = 100;
 
-    ULONG_PTR Token;
-    GdiplusStartupInput Input;
+    bool IsDead = false;
 
-    GdiplusStartup(&Token,&Input,0);
+    BulletClass Bullet[6];
 
-    /* The Window structure */
-    wincl.hInstance = hThisInstance;
-    wincl.lpszClassName = szClassName;
-    wincl.lpfnWndProc = WindowProcedure;      /* This function is called by windows */
-    wincl.style = CS_DBLCLKS;                 /* Catch double-clicks */
-    wincl.cbSize = sizeof (WNDCLASSEX);
+    PlaneClass(void){}
 
-    /* Use default icon and mouse-pointer */
-    wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
-    wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
-    wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
-    wincl.lpszMenuName = NULL;                 /* No menu */
-    wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
-    wincl.cbWndExtra = 0;                      /* structure or the window instance */
-    /* Use Windows's default colour as the background of the window */
-
-    wincl.hbrBackground = 0;//CreatePatternBrush(Backgroud);
-
-    /* Register the window class, and if it fails quit the program */
-    if (!RegisterClassEx (&wincl))
-        return 0;
-
-    /* The class is registered, let's create the program*/
-    hwnd = CreateWindowEx (
-           0,                   /* Extended possibilites for variation */
-           szClassName,         /* Classname */
-           _T("PlaneHit"),       /* Title Text */
-           WS_OVERLAPPEDWINDOW, /* default window */
-           CW_USEDEFAULT,       /* Windows decides the position */
-           CW_USEDEFAULT,       /* where the window ends up on the screen */
-           800,                 /* The programs width */
-           600,                 /* and height in pixels */
-           HWND_DESKTOP,        /* The window is a child-window to desktop */
-           NULL,                /* No menu */
-           hThisInstance,       /* Program Instance handler */
-           NULL                 /* No Window Creation data */
-           );
-
-    /* Make the window visible on the screen */
-    ShowWindow (hwnd, nCmdShow);
-
-    /* Run the message loop. It will run until GetMessage() returns 0 */
-    while (GetMessage (&messages,NULL,0,0))
+    void Move(int Type)
     {
-        /* Translate virtual-key messages into character messages */
-        TranslateMessage(&messages);
-        /* Send message to WindowProcedure */
-        DispatchMessage(&messages);
+        switch(Type)
+        {
+            case 'W':
+            {
+                if(y > 0)
+                {
+                    y-=15;
+                }
+                break;
+            }
+            case 'S':
+            {
+                if(y < 500)
+                {
+                    y+=15;
+                }
+                break;
+            }
+            case 'A':
+            {
+                if(x > 0)
+                {
+                    x-=15;
+                }
+                break;
+            }
+            case 'D':
+            {
+                if(x < 700)
+                {
+                    x+=15;
+                }
+                break;
+            }
+            default:break;
+        }
+
     }
 
-    GdiplusShutdown(Token);
-    /* The program return-value is 0 - The value that PostQuitMessage() gave */
-    return messages.wParam;
-}
-
-
-/*  This function is called by the Windows function DispatchMessage()  */
-
-LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    static int cxClient;
-    static int cyClient;
-    static HDC hDCBuffer;
-    static HBITMAP hBitmap;
-    switch (message)                  /* handle the messages */
+    void Destroyed(FlyingMonsterClass& Monster)
     {
-        case WM_SIZE:
+        RECT rcSelf;
+        RECT rcMonster;
+        RECT Tmp;
+
+        rcSelf.left = x + 20;
+        rcSelf.top = y + 20;
+        rcSelf.right = x+Width - 20;
+        rcSelf.bottom = y+Height - 20;
+
+        rcMonster.left = Monster.x;
+        rcMonster.top = Monster.y;
+        rcMonster.right = Monster.x+Monster.Width;
+        rcMonster.bottom = Monster.y+Monster.Height;
+
+        if(IntersectRect(&Tmp,&rcSelf,&rcMonster) && !Monster.IsDead)
         {
-            cxClient = LOWORD(lParam);
-            cyClient = HIWORD(lParam);
-            break;
+            IsDead = true;
         }
-
-        case WM_TIMER:
-        {
-            Plane.FillBullet();
-            HDC hdc = GetDC(hwnd);
-
-            if(OutPutCount % 5 == 0 && OutPutCount >= 5)
-            {
-                Plane.Bullet[OutPutCount/5-1].IsOutPut = true;
-            }
-            OutPutCount++;
-            if(OutPutCount > 30)
-            {
-                OutPutCount = 0;
-            }
-
-            Plane.ReFillBullet();
-            Plane.MoveBullet();
-
-            for(int i = 0;i < 6;i++)
-            {
-                Plane.Destroyed(Monster[i]);
-                if(Plane.IsDead)
-                {
-                    KillTimer(hwnd,1);
-                    DrawPicture(hdc,(wchar_t*)L"Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
-                    InvalidateRect(hwnd,0,true);
-                    MessageBox(hwnd,"您已被击中!","游戏结束",MB_OK);
-                    return 0;
-                }
-            }
-
-            for(int i = 0;i < 6;i++)
-            {
-                Monster[i].Move(Plane.x,Plane.y);
-                for(int j = 0;j < 6;j++)
-                {
-                    Monster[i].Destroyed(Plane.Bullet[j]);
-                }
-                if(Monster[i].IsDead)
-                {
-                    Monster[i].ReLive(Plane.x,Plane.y,Plane.Width,Plane.Height);
-                }
-            }
-
-
-            InvalidateRect(hwnd,0,true);
-
-            ReleaseDC(hwnd,hdc);
-
-            break;
-        }
-
-        case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd,&ps);
-            hDCBuffer = CreateCompatibleDC(hdc);
-            hBitmap = (HBITMAP)LoadImage(0,"Res//sky.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-            SelectObject(hDCBuffer,hBitmap);
-
-            DrawPicture(hDCBuffer,Plane.PngName,Plane.x,Plane.y,Plane.Width,Plane.Height);
-
-            DrawPicture(hDCBuffer,Plane.Bullet[0].PngName,Plane.Bullet[0].x,Plane.Bullet[0].y,Plane.Bullet[0].width,Plane.Bullet[0].height);
-            DrawPicture(hDCBuffer,Plane.Bullet[1].PngName,Plane.Bullet[1].x,Plane.Bullet[1].y,Plane.Bullet[1].width,Plane.Bullet[1].height);
-            DrawPicture(hDCBuffer,Plane.Bullet[2].PngName,Plane.Bullet[2].x,Plane.Bullet[2].y,Plane.Bullet[2].width,Plane.Bullet[2].height);
-            DrawPicture(hDCBuffer,Plane.Bullet[3].PngName,Plane.Bullet[3].x,Plane.Bullet[3].y,Plane.Bullet[3].width,Plane.Bullet[3].height);
-            DrawPicture(hDCBuffer,Plane.Bullet[4].PngName,Plane.Bullet[4].x,Plane.Bullet[4].y,Plane.Bullet[4].width,Plane.Bullet[4].height);
-            if(Plane.IsDead)
-            {
-                DrawPicture(hDCBuffer,(wchar_t*)L"Res\\Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
-            }
-            for(int i = 0; i < 6;i++)
-            {
-                DrawPicture(hDCBuffer,Monster[i].PngName,Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
-            }
-
-
-            BitBlt(hdc,0,0,cxClient,cyClient,hDCBuffer,0,0,SRCCOPY);
-
-            EndPaint(hwnd,&ps);
-            break;
-        }
-
-        case WM_CREATE:
-        {
-            SetTimer(hwnd,1,1,0);
-            break;
-        }
-
-        case WM_KEYDOWN:
-        {
-            Plane.Move(wParam);
-            break;
-        }
-
-        case WM_DESTROY:
-        {
-            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
-            break;
-        }
-        default:                      /* for messages that we don't deal with */
-            return DefWindowProc (hwnd, message, wParam, lParam);
     }
-    return 0;
-}
 
-void DrawPicture(HDC hdc,wchar_t* FileName,int x,int y,int width,int height)
-{
-    Image image(FileName);
+    void ReFillBullet(void)
+    {
+        for(int i = 0;i < 6;i++)
+        {
+            if(Bullet[i].y < 0)
+            {
+                Bullet[i].x = x+50-10;
+                Bullet[i].y = y-25;
 
-    Graphics Graph(hdc);
+                if(i > 0 && Bullet[i].y == Bullet[i-1].y)       //防止玩家的移动到屏幕顶端再下来的时候图片重叠
+                {
+                    Bullet[i-1].y -= 50;
+                }
+            }
+        }
+    }
 
-    Graph.DrawImage(&image,Rect(x,y,width,height));
-}
+    void FillBullet(void)
+    {
+        for(int i = 0;i < 5;i++)
+        {
+            if(!Bullet[i].IsOutPut)
+            {
+                Bullet[i].x = x+50-10;
+                Bullet[i].y = y-25;
+            }
+        }
+    }
+
+    void MoveBullet(void)
+    {
+        for(int i = 0;i < 5;i++)
+        {
+            if(Bullet[i].IsOutPut)
+            {
+                Bullet[i].Move();
+            }
+        }
+    }
+};
+
+#endif // PLANECLASS_H_INCLUDED
