@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "FlyingMonsterClass.h"
 #include "BulletClass.h"
+#include "Data.h"
 
 class PlaneClass
 {
@@ -17,7 +18,7 @@ class PlaneClass
 
     bool IsDead = false;
 
-    BulletClass Bullet[6];
+    BulletClass Bullet[MAX_BULLET];
 
     PlaneClass(void){}
 
@@ -29,7 +30,7 @@ class PlaneClass
             {
                 if(y > 0)
                 {
-                    y-=15;
+                    y-=5;
                 }
                 break;
             }
@@ -37,7 +38,7 @@ class PlaneClass
             {
                 if(y < 500)
                 {
-                    y+=15;
+                    y+=5;
                 }
                 break;
             }
@@ -45,7 +46,7 @@ class PlaneClass
             {
                 if(x > 0)
                 {
-                    x-=15;
+                    x-=5;
                 }
                 break;
             }
@@ -53,7 +54,7 @@ class PlaneClass
             {
                 if(x < 700)
                 {
-                    x+=15;
+                    x+=5;
                 }
                 break;
             }
@@ -86,7 +87,7 @@ class PlaneClass
 
     void ReFillBullet(void)
     {
-        for(int i = 0;i < 6;i++)
+        for(int i = 0;i < MAX_BULLET;i++)
         {
             if(Bullet[i].y < 0)
             {
@@ -103,7 +104,7 @@ class PlaneClass
 
     void FillBullet(void)
     {
-        for(int i = 0;i < 5;i++)
+        for(int i = 0;i < MAX_BULLET;i++)
         {
             if(!Bullet[i].IsOutPut)
             {
