@@ -7,13 +7,17 @@
 #include <tchar.h>
 #include <windows.h>
 #include <gdiplus.h>
-#include "Data.h"
+#include "PlaneClass.h"
+#include "FlyingMonsterClass.h"
+#include "BulletClass.h"
 
 using namespace Gdiplus;
 
 PlaneClass Plane;
-FlyingMonsterClass Monster[6];
+FlyingMonsterClass Monster[MAX_MONSTER];
 int OutPutCount = 0;
+int Score = 0;
+bool IsPause = false;       //暂停标志变量
 
 LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
 
@@ -61,7 +65,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
            0,                   /* Extended possibilites for variation */
            szClassName,         /* Classname */
            _T("PlaneHit"),       /* Title Text */
-           WS_OVERLAPPEDWINDOW, /* default window */
+           WS_OVERLAPPEDWINDOW^WS_THICKFRAME, /* default window */
            CW_USEDEFAULT,       /* Windows decides the position */
            CW_USEDEFAULT,       /* where the window ends up on the screen */
            800,                 /* The programs width */
@@ -73,7 +77,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
            );
 
     /* Make the window visible on the screen */
-    ShowWindow (hwnd, nCmdShow);
+    ShowWindow (hwnd,nCmdShow);
 
     /* Run the message loop. It will run until GetMessage() returns 0 */
     while (GetMessage (&messages,NULL,0,0))
@@ -109,60 +113,74 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
         case WM_TIMER:
         {
-            Plane.FillBullet();
-            HDC hdc = GetDC(hwnd);
-
-            if(OutPutCount % 5 == 0 && OutPutCount >= 5)
+            if(!IsPause)
             {
-                Plane.Bullet[OutPutCount/5-1].IsOutPut = true;
-            }
-            OutPutCount++;
-            if(OutPutCount > 30)
-            {
-                OutPutCount = 0;
-            }
+                Plane.FillBullet();
+                HDC hdc = GetDC(hwnd);
 
-            Plane.ReFillBullet();
-            Plane.MoveBullet();
-
-            for(int i = 0;i < 6;i++)
-            {
-                Plane.Destroyed(Monster[i]);
-                if(Plane.IsDead)
+                if(OutPutCount % 5 == 0 && OutPutCount >= 5)
                 {
-                    KillTimer(hwnd,1);
-                    DrawPicture(hdc,(wchar_t*)L"Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
+                    Plane.Bullet[OutPutCount/5-1].IsOutPut = true;
                 }
-            }
+                OutPutCount++;
+                if(OutPutCount > 30)
+                {
+                    OutPutCount = 0;
+                }
 
-            for(int i = 0;i < 6;i++)
+                Plane.ReFillBullet();
+                Plane.MoveBullet();
+
+                for(int i = 0;i < MAX_MONSTER;i++)
+                {
+                    Plane.Destroyed(Monster[i]);
+                    if(Plane.IsDead)
+                    {
+                        KillTimer(hwnd,1);
+                        DrawPicture(hdc,(wchar_t*)L"Res\\Boom.png",Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
+                    }
+                }
+
+                for(int i = 0;i < MAX_MONSTER;i++)
+                {
+                    Monster[i].Move(Plane.x,Plane.y);
+                    for(int j = 0;j < MAX_BULLET;j++)
+                    {
+                        Monster[i].Destroyed(Plane.Bullet[j]);
+                    }
+                    if(Monster[i].IsDead)
+                    {
+                        DrawPicture(hdc,(wchar_t*)L"Res\\Boom.png",Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
+                        Monster[i].ReLive(Plane.x,Plane.y,Plane.Width,Plane.Height);
+                        Score+=10;
+                    }
+                }
+
+                InvalidateRect(hwnd,0,true);
+
+                ReleaseDC(hwnd,hdc);
+            }
+            else
             {
-                Monster[i].Move(Plane.x,Plane.y);
-                for(int j = 0;j < 6;j++)
-                {
-                    Monster[i].Destroyed(Plane.Bullet[j]);
-                }
-                if(Monster[i].IsDead)
-                {
-                    DrawPicture(hdc,(wchar_t*)L"Res\\Boom.png",Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
-                    Monster[i].ReLive(Plane.x,Plane.y,Plane.Width,Plane.Height);
-                }
+                SetWindowText(hwnd,"PlaneHit 游戏暂停中");
             }
-
-
-            InvalidateRect(hwnd,0,true);
-
-            ReleaseDC(hwnd,hdc);
 
             break;
         }
 
         case WM_PAINT:
         {
+            char ScoreBuffer[12];
+
+            HFONT hFont = CreateFont(40,14,0,0,400,FALSE, FALSE, FALSE,DEFAULT_CHARSET,OUT_CHARACTER_PRECIS,CLIP_CHARACTER_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,TEXT("微软雅黑"));
+
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd,&ps);
             hDCBuffer = CreateCompatibleDC(hdc);
             hBitmap = (HBITMAP)LoadImage(0,"Res//sky.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+
+            wsprintf(ScoreBuffer,"分数:%d",Score);
+            SelectObject(hDCBuffer,hFont);
             SelectObject(hDCBuffer,hBitmap);
 
             DrawPicture(hDCBuffer,Plane.PngName,Plane.x,Plane.y,Plane.Width,Plane.Height);
@@ -172,6 +190,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             DrawPicture(hDCBuffer,Plane.Bullet[2].PngName,Plane.Bullet[2].x,Plane.Bullet[2].y,Plane.Bullet[2].width,Plane.Bullet[2].height);
             DrawPicture(hDCBuffer,Plane.Bullet[3].PngName,Plane.Bullet[3].x,Plane.Bullet[3].y,Plane.Bullet[3].width,Plane.Bullet[3].height);
             DrawPicture(hDCBuffer,Plane.Bullet[4].PngName,Plane.Bullet[4].x,Plane.Bullet[4].y,Plane.Bullet[4].width,Plane.Bullet[4].height);
+
+            SetBkMode(hDCBuffer,TRANSPARENT);
+            TextOut(hDCBuffer,0,0,ScoreBuffer,strlen(ScoreBuffer));
             if(Plane.IsDead)
             {
                 DrawPicture(hdc,(wchar_t*)L"Res\\Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
@@ -180,7 +201,12 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 return 0;
             }
 
-            for(int i = 0; i < 6;i++)
+            if(!IsPause)
+            {
+                SetWindowText(hwnd,"PlaneHit By Vmpy");
+            }
+
+            for(int i = 0; i < MAX_MONSTER;i++)
             {
                 DrawPicture(hDCBuffer,Monster[i].PngName,Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
             }
@@ -188,18 +214,36 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             BitBlt(hdc,0,0,cxClient,cyClient,hDCBuffer,0,0,SRCCOPY);
 
             EndPaint(hwnd,&ps);
+            DeleteDC(hDCBuffer);
+            DeleteObject(hBitmap);
             break;
         }
 
         case WM_CREATE:
         {
-            SetTimer(hwnd,1,1,0);
+            SetTimer(hwnd,1,100,0);
             break;
         }
 
         case WM_KEYDOWN:
         {
-            Plane.Move(wParam);
+            switch(wParam)
+            {
+                case 'P':IsPause = !IsPause;break;  //当P键按下时，游戏暂停
+                default:
+                {
+                    Plane.Move(wParam);
+                    break;
+                }
+            }
+
+            if(GetKeyState(VK_SHIFT) < 0)   //当Shift按下时，加速移动.
+            {
+                Plane.Move(wParam);
+                Plane.Move(wParam);
+                Plane.Move(wParam);
+                Plane.Move(wParam);
+            }
             break;
         }
 
@@ -217,8 +261,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 void DrawPicture(HDC hdc,wchar_t* FileName,int x,int y,int width,int height)
 {
     Image image(FileName);
-
     Graphics Graph(hdc);
-
     Graph.DrawImage(&image,Rect(x,y,width,height));
 }
