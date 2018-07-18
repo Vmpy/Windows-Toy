@@ -132,9 +132,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 {
                     KillTimer(hwnd,1);
                     DrawPicture(hdc,(wchar_t*)L"Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
-                    InvalidateRect(hwnd,0,true);
-                    MessageBox(hwnd,"您已被击中!","游戏结束",MB_OK);
-                    return 0;
                 }
             }
 
@@ -147,6 +144,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 }
                 if(Monster[i].IsDead)
                 {
+                    DrawPicture(hdc,(wchar_t*)L"Res\\Boom.png",Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
                     Monster[i].ReLive(Plane.x,Plane.y,Plane.Width,Plane.Height);
                 }
             }
@@ -176,13 +174,16 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             DrawPicture(hDCBuffer,Plane.Bullet[4].PngName,Plane.Bullet[4].x,Plane.Bullet[4].y,Plane.Bullet[4].width,Plane.Bullet[4].height);
             if(Plane.IsDead)
             {
-                DrawPicture(hDCBuffer,(wchar_t*)L"Res\\Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
+                DrawPicture(hdc,(wchar_t*)L"Res\\Boom.png",Plane.x,Plane.y,Plane.Width,Plane.Height);
+                MessageBox(hwnd,"您已被击中!","游戏结束",MB_OK);
+                SendMessage(hwnd,WM_DESTROY,0,0);
+                return 0;
             }
+
             for(int i = 0; i < 6;i++)
             {
                 DrawPicture(hDCBuffer,Monster[i].PngName,Monster[i].x,Monster[i].y,Monster[i].Width,Monster[i].Height);
             }
-
 
             BitBlt(hdc,0,0,cxClient,cyClient,hDCBuffer,0,0,SRCCOPY);
 
