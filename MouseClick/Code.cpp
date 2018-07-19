@@ -13,6 +13,9 @@ LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
 /*  Make the class name into a global variable  */
 TCHAR szClassName[ ] = _T("MouseClick");
 
+unsigned int id1 = GlobalAddAtom("Start");
+unsigned int id2 = GlobalAddAtom("End");
+
 int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszArgument,int nCmdShow)
 {
     HWND hwnd;               /* This is the handle for our window */
@@ -59,14 +62,16 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
     ShowWindow (hwnd, nCmdShow);
 
     //注册热键
-    RegisterHotKey(hwnd,1,MOD_CONTROL,'S');	// Ctrl + S
-    RegisterHotKey(hwnd,2,MOD_CONTROL,'E');	// Ctrl + E
+    RegisterHotKey(hwnd,id1,MOD_CONTROL,'S');	// Ctrl + S
+    RegisterHotKey(hwnd,id2,MOD_CONTROL,'E');	// Ctrl + E
 
     while (GetMessage (&messages,0,0,0))
     {
         TranslateMessage(&messages);
         DispatchMessage(&messages);
     }
+    UnregisterHotKey(hwnd,id1);
+    UnregisterHotKey(hwnd,id2);
 
     return messages.wParam;
 }
@@ -118,9 +123,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         //快捷键消息接受.
         case WM_HOTKEY:
         {
-            switch(wParam)
-            {
-                case 1:
+                if(wParam == id1)
                 {
                     char Time[10];
                     SendMessage(TimeEdit,WM_GETTEXT,(WPARAM)10,(LPARAM)Time);
@@ -128,12 +131,11 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     SetTimer(hwnd,1,TimeOut,0);
                     break;
                 }
-                case 2:
+                if(wParam == id2)
                 {
                     KillTimer(hwnd,1);
                     break;
                 }
-            }
             break;
         }
 
@@ -168,15 +170,12 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
         case WM_DESTROY:
         {
-            //解除注册的热键.
-            UnregisterHotKey(hwnd,1);
-            UnregisterHotKey(hwnd,2);
             SetSysColors(1,UaiElements,UaColors);
             PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             break;
         }
         default:                      /* for messages that we don't deal with */
-            return DefWindowProc (hwnd, message, wParam, lParam);
+            return DefWindowProc (hwnd,message,wParam,lParam);
     }
     return 0;
 }
