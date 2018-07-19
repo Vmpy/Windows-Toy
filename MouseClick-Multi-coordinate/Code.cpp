@@ -22,6 +22,10 @@ bool Locked = false;
 /*  Make the class name into a global variable  */
 TCHAR szClassName[ ] = _T("MouseClick-(Multi-coordinate)");
 
+unsigned int id1 = GlobalAddAtom("Start") - 0xC000;
+unsigned int id2 = GlobalAddAtom("End") - 0xC000;
+unsigned int id3 = GlobalAddAtom("Lock") - 0xC000;
+
 int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszArgument,int nCmdShow)
 {
     HWND hwnd;               /* This is the handle for our window */
@@ -68,9 +72,9 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
     /* Make the window visible on the screen */
     ShowWindow (hwnd,nCmdShow);
 
-    RegisterHotKey(hwnd,1,MOD_CONTROL,'S');	// Ctrl + S
-    RegisterHotKey(hwnd,2,MOD_CONTROL,'E');	// Ctrl + E
-    RegisterHotKey(hwnd,3,MOD_CONTROL,'O');	// Ctrl + O
+    RegisterHotKey(hwnd,id1,MOD_CONTROL,'S');	// Ctrl + S
+    RegisterHotKey(hwnd,id2,MOD_CONTROL,'E');	// Ctrl + E
+    RegisterHotKey(hwnd,id3,MOD_CONTROL,'O');	// Ctrl + O
 
     /* Run the message loop. It will run until GetMessage() returns 0 */
     while (GetMessage (&messages, NULL, 0, 0))
@@ -172,9 +176,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd,UINT message,WPARAM wParam,LPARAM lP
 
         case WM_HOTKEY:
         {
-            switch(wParam)
-            {
-                case 1:
+                if(wParam == id1)
                 {
                     LoadPosition(Checked,PositionList);
                     if(SizeOfCheck <= 1)
@@ -188,7 +190,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd,UINT message,WPARAM wParam,LPARAM lP
                     SetTimer(hwnd,1,TimeOut,0);
                     break;
                 }
-                case 2:
+                else if(wParam == id2)
                 {
                     if(SizeOfCheck <= 1)
                     {
@@ -199,12 +201,11 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd,UINT message,WPARAM wParam,LPARAM lP
                     ClearPosition(Checked); //清理指针空间.
                     break;
                 }
-                case 3:
+                else if(wParam == id3)
                 {
                     Locked = !Locked;       //锁定和非锁定的状态转化.
                     break;
                 }
-            }
             break;
         }
 
