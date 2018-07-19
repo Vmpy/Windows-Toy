@@ -82,6 +82,10 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
         TranslateMessage(&messages);
         DispatchMessage(&messages);
     }
+    UnregisterHotKey(hwnd,id1);	// Ctrl + S
+    UnregisterHotKey(hwnd,id2);	// Ctrl + E
+    UnregisterHotKey(hwnd,id3);	// Ctrl + O
+
     return messages.wParam;
 }
 
