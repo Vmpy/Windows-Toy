@@ -315,12 +315,13 @@ void LoadPosition(POINT* Pos,HWND List)
 
     for(int i = 0; i < SizeOfCheck;i++)
     {
+        //通过列表框内记录的x|y形式的文本获取坐标.
         SendMessage(List,LB_GETTEXT,(WPARAM)i,(LPARAM)Buffer);
         int IndexOfChar = FindChar(Buffer,'|',20);
-        char x[5];
-        char y[5];
+        char x[8] = {'\0'};
+        char y[8] = {'\0'};
         strncpy(x,Buffer,IndexOfChar);
-        strncpy(y,Buffer+IndexOfChar+1,5);
+        strncpy(y,Buffer+IndexOfChar+1,8);
         Checked[i].x = atoi(x);
         Checked[i].y = atoi(y);
     }
