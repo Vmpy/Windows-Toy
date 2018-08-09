@@ -7,11 +7,14 @@
 #include <tchar.h>
 #include <windows.h>
 #include <gdiplus.h>
+#include "Data.h"
 
 using namespace Gdiplus;
 
 /*  Declare Windows procedure  */
 LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
+
+GameClass Game;
 
 /*  Make the class name into a global variable  */
 TCHAR szClassName[ ] = _T("DoodleJumpWin32");
@@ -51,11 +54,11 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
            0,                   /* Extended possibilites for variation */
            szClassName,         /* Classname */
            _T("Win32 DoodleJump"),       /* Title Text */
-           WS_OVERLAPPEDWINDOW, /* default window */
+           WS_OVERLAPPEDWINDOW^WS_THICKFRAME^WS_MAXIMIZEBOX, /* default window */
            CW_USEDEFAULT,       /* Windows decides the position */
            CW_USEDEFAULT,       /* where the window ends up on the screen */
-           544,                 /* The programs width */
-           375,                 /* and height in pixels */
+           MAX_WIDTH,                 /* The programs width */
+           MAX_HEIGHT,                 /* and height in pixels */
            HWND_DESKTOP,        /* The window is a child-window to desktop */
            NULL,                /* No menu */
            hThisInstance,       /* Program Instance handler */
