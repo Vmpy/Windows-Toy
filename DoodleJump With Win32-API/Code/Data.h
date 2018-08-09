@@ -2,11 +2,14 @@
 #define DATA_H_INCLUDED
 
 #include <windows.h>
+#include <gdiplus.h>
+using namespace Gdiplus;
 
 #define MAX_WIDTH 360
 #define MAX_HEIGHT 640
 
 #define MAX_ARRSIZE 10
+#define ID_TIMER 1
 
 class FloorClass
 {
@@ -15,27 +18,32 @@ class FloorClass
     int y;
 
     int width;
+    int height = 15;
 
     void ReBorn(void)
     {
         x = rand()%MAX_WIDTH;
         y = 0;
-        width = rand()%50+15;
+        width = rand()%50+25;
+    }
+
+    void Move(void)
+    {
+        y+=4;
     }
 };
 
 class DoodleClass
 {
     public:
-    char FileName[20] = "Res\\Doodle.png";
     int x;
     int y;
-    int JumpStartIndex;
-    int Width = 10;
-    int Height = 10;
+    int Width = 40;
+    int Height = 40;
 
     bool UpOrDown = false;
-    int MaxJumpHeight = 25;
+    int MaxJumpHeight = 120;
+    int CountJumpPixel = 0;
     bool IsDead = false;
 
     //左右移动.
@@ -62,38 +70,16 @@ class DoodleClass
         }
     }
 
-    //获取当前Doodle所踩的踏板下标
-    void GetJumpBase(FloorClass* Arr,int Size)
-    {
-        int Min;
-        int Num[Size];
-        for(int i = 0;i< Size;i++)
-        {
-            Num[i] = Arr[i].y-y;      //当地板在人物上方时为负数
-        }
-
-        Min = Num[0];
-
-        for(int i = 0;i< Size;i++)
-        {
-            if(Min > Num[i] && Num[i] >= 0)
-            {
-                Min = Num[i];
-                JumpStartIndex = i;      //找出Num数组中最小的数字的下标
-            }
-        }
-    }
-
     //设置跳跃方向（落下[false]或者上升[true])
     void SetJumpDirection(FloorClass* Arr,int Size)
     {
-        if((Height + y) == Arr[JumpStartIndex].y)
+        for(int i = 0;i < MAX_ARRSIZE;i++)
         {
-            UpOrDown = true;
-        }
-        if(y == (Arr[JumpStartIndex].y-MaxJumpHeight))
-        {
-            UpOrDown = false;
+            if(x > Arr[i].x && (x) < (Arr[i].x+Arr[i].width) && (y+Height) == Arr[i].y)
+            {
+                UpOrDown = true;
+                CountJumpPixel=0;
+            }
         }
     }
 
@@ -102,11 +88,18 @@ class DoodleClass
     {
         if(UpOrDown)
         {
-            y--;
+            y-=1;
+            CountJumpPixel++;
         }
         else
         {
-            y++;
+            y+=1;
+            CountJumpPixel--;
+        }
+
+        if(CountJumpPixel >= MaxJumpHeight)
+        {
+            UpOrDown = false;
         }
     }
 };
@@ -126,9 +119,26 @@ class GameClass
             Floor[i].y = i*BlankHeight;
         }
 
-        Doodle.JumpStartIndex = 0;
-        Doodle.x = Floor[0].x + 5;
-        Doodle.y = Floor[0].y;
+        Doodle.x = Floor[9].x + 5;
+        Doodle.y = Floor[9].y - Doodle.Height;
+    }
+
+    void DrawSight(HDC hdc)
+    {
+        Image ImageDoodle((wchar_t*)L"Res\\Doodle.png");
+        Image ImageFloor((wchar_t*)L"Res\\Floor_normal.png");
+        Image ImageSky((wchar_t*)L"Res\\Sky.png");
+        if(ImageDoodle.GetLastStatus() != Status::Ok || ImageFloor.GetLastStatus() != Status::Ok)
+        {
+            MessageBox(0,"文件数据丢失!",NULL,MB_OK|MB_ICONERROR);
+        }
+
+        Graphics Graph(hdc);
+        Graph.DrawImage(&ImageDoodle,RectF(Doodle.x,Doodle.y,Doodle.Width,Doodle.Height));
+        for(int i = 0;i < MAX_ARRSIZE;i++)
+        {
+            Graph.DrawImage(&ImageFloor,RectF(Floor[i].x,Floor[i].y,Floor[i].width,Floor[i].height));
+        }
     }
 };
 
