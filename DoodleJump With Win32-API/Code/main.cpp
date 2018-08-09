@@ -43,7 +43,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszAr
     wincl.lpszMenuName = NULL;                 /* No menu */
     wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
     wincl.cbWndExtra = 0;                      /* structure or the window instance */
-    wincl.hbrBackground = NULL;
+    wincl.hbrBackground = 0;
 
     /* Register the window class, and if it fails quit the program */
     if (!RegisterClassEx (&wincl))
@@ -90,8 +90,47 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 {
     switch (message)                  /* handle the messages */
     {
+        case WM_CREATE:
+        {
+            SetTimer(hwnd,ID_TIMER,1,0);
+            break;
+        }
+
+        case WM_TIMER:
+        {
+            Game.Doodle.SetJumpDirection(Game.Floor,MAX_ARRSIZE);
+            Game.Doodle.Jump();
+
+            InvalidateRect(hwnd,0,true);
+            break;
+        }
+
+        case WM_PAINT:
+        {
+            char Fxxk[100];
+
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd,&ps);
+            HDC hDCBuffer = CreateCompatibleDC(hdc);
+
+            HBITMAP hBitmap = (HBITMAP)LoadImage(0,"Res//sky.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+            SelectObject(hDCBuffer,hBitmap);
+
+            Game.DrawSight(hDCBuffer);
+
+            BitBlt(hdc,0,0,MAX_WIDTH,MAX_HEIGHT,hDCBuffer,0,0,SRCCOPY);
+
+            wsprintf(Fxxk,"方向:%d,涂鸦%d",(int)Game.Doodle.UpOrDown,Game.Doodle.y);
+            TextOut(hdc,0,0,Fxxk,lstrlen(Fxxk));
+
+            EndPaint(hwnd,&ps);
+            DeleteDC(hDCBuffer);
+            DeleteObject(hBitmap);
+            break;
+        }
         case WM_DESTROY:
         {
+            KillTimer(hwnd,ID_TIMER);
             PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
             break;
         }
