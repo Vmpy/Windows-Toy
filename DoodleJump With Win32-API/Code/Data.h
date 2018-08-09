@@ -22,14 +22,17 @@ class FloorClass
 
     void ReBorn(void)
     {
-        x = rand()%MAX_WIDTH;
-        y = 0;
-        width = rand()%50+25;
+        if(y > MAX_HEIGHT)
+        {
+            x = rand()%MAX_WIDTH;
+            y = 0;
+            width = rand()%100+35;
+        }
     }
 
     void Move(void)
     {
-        y+=4;
+        y+=1;
     }
 };
 
@@ -41,9 +44,9 @@ class DoodleClass
     int Width = 40;
     int Height = 40;
 
-    bool UpOrDown = false;
-    int MaxJumpHeight = 120;
-    int CountJumpPixel = 0;
+    bool UpOrDown = false;      //跳跃方向，落下或者上升
+    int MaxJumpHeight = 130;    //极限跳跃高度.
+    int CountJumpPixel = 0;     //当前已经跳跃的像素高度
     bool IsDead = false;
 
     //左右移动.
@@ -55,7 +58,7 @@ class DoodleClass
             {
                 if(x < MAX_WIDTH)
                 {
-                    x++;
+                    x+=10;
                 }
                 break;
             }
@@ -63,7 +66,7 @@ class DoodleClass
             {
                 if(x > 0)
                 {
-                    x--;
+                    x-=10;
                 }
                 break;
             }
@@ -75,7 +78,8 @@ class DoodleClass
     {
         for(int i = 0;i < MAX_ARRSIZE;i++)
         {
-            if(x > Arr[i].x && (x) < (Arr[i].x+Arr[i].width) && (y+Height) == Arr[i].y)
+            //满足条件:除了触碰踏板面还有跳跃方向为落下
+            if((x+Width) > Arr[i].x && (x) < (Arr[i].x+Arr[i].width) && (y+Height) == Arr[i].y && UpOrDown == false)
             {
                 UpOrDown = true;
                 CountJumpPixel=0;
@@ -88,12 +92,12 @@ class DoodleClass
     {
         if(UpOrDown)
         {
-            y-=1;
+            y--;
             CountJumpPixel++;
         }
         else
         {
-            y+=1;
+            y++;
             CountJumpPixel--;
         }
 
@@ -110,17 +114,18 @@ class GameClass
     FloorClass Floor[MAX_ARRSIZE];
     DoodleClass Doodle;
 
-    GameClass(void)
+    void First(void)
     {
         int BlankHeight = MAX_HEIGHT/MAX_ARRSIZE;
         for(int i = 0;i < MAX_ARRSIZE;i++)
         {
-            Floor[i].ReBorn();
+            Floor[i].x = rand()%MAX_WIDTH;
+            Floor[i].width = rand()%100+35;
             Floor[i].y = i*BlankHeight;
         }
 
-        Doodle.x = Floor[9].x + 5;
-        Doodle.y = Floor[9].y - Doodle.Height;
+        Doodle.x = Floor[9].x + Doodle.Width;
+        Doodle.y = Doodle.Height;
     }
 
     void DrawSight(HDC hdc)
