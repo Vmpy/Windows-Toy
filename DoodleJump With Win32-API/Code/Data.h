@@ -8,7 +8,7 @@ using namespace Gdiplus;
 #define MAX_WIDTH 360
 #define MAX_HEIGHT 640
 
-#define MAX_ARRSIZE 10
+#define MAX_ARRSIZE 8
 #define ID_TIMER 1
 
 class FloorClass
@@ -22,7 +22,7 @@ class FloorClass
 
     void ReBorn(void)
     {
-        if(y > MAX_HEIGHT)
+        if(y > MAX_HEIGHT)          //当踏板的位置到达屏幕不可见的位置时就重写数据
         {
             x = rand()%MAX_WIDTH;
             y = 0;
@@ -36,6 +36,64 @@ class FloorClass
     }
 };
 
+class FloorMoveClass:public FloorClass
+{
+    public:
+    bool MoveDirection = false;         //踏板移动方向:左(false)右(true)
+    bool IsHave = true;                 //移动踏板由概率生成，标志游戏场景中是否存在移动踏板
+
+    void SetIsHave(void)
+    {
+        if(rand()%100 > 30)
+        {
+            IsHave = true;
+        }
+        else
+        {
+            IsHave = false;
+        }
+    }
+
+    void ReBorn(void)
+    {
+        if(y > MAX_HEIGHT)
+        {
+            SetIsHave();
+            x = rand()%MAX_WIDTH;
+            y = rand()%(width+1) + 15;
+            width = rand()%100+35;
+        }
+    }
+
+    void SetMoveDirection(void)
+    {
+        if(x <= 0)
+        {
+            MoveDirection = true;
+        }
+        if(x >= MAX_WIDTH)
+        {
+            MoveDirection = false;
+        }
+    }
+
+    void Move(void)
+    {
+        SetMoveDirection();
+        y+=1;
+
+        if(MoveDirection)
+        {
+            x++;
+        }
+        else
+        {
+            x--;
+        }
+    }
+
+};
+
 class DoodleClass
 {
     public:
@@ -45,7 +103,7 @@ class DoodleClass
     int Height = 40;
 
     bool UpOrDown = false;      //跳跃方向，落下或者上升
-    int MaxJumpHeight = 130;    //极限跳跃高度.
+    int MaxJumpHeight = 125;    //极限跳跃高度.
     int CountJumpPixel = 0;     //当前已经跳跃的像素高度
     bool IsDead = false;
 
@@ -74,7 +132,7 @@ class DoodleClass
     }
 
     //设置跳跃方向（落下[false]或者上升[true])
-    void SetJumpDirection(FloorClass* Arr,int Size)
+    void SetJumpDirection(FloorMoveClass MoveF,FloorClass* Arr,int Size)
     {
         for(int i = 0;i < MAX_ARRSIZE;i++)
         {
@@ -84,6 +142,12 @@ class DoodleClass
                 UpOrDown = true;
                 CountJumpPixel=0;
             }
+        }
+
+        if((x+Width) > MoveF.x && (x) < (MoveF.x+MoveF.width) && (y+Height) == MoveF.y && UpOrDown == false && MoveF.IsHave)
+        {
+            UpOrDown = true;
+            CountJumpPixel=0;
         }
     }
 
@@ -106,6 +170,14 @@ class DoodleClass
             UpOrDown = false;
         }
     }
+
+    void Death(void)
+    {
+        if(x > MAX_WIDTH)
+        {
+            IsDead = true;
+        }
+    }
 };
 
 class GameClass
@@ -113,6 +185,9 @@ class GameClass
     public:
     FloorClass Floor[MAX_ARRSIZE];
     DoodleClass Doodle;
+    FloorMoveClass FloorMove;
+
+    int Score = 0;
 
     void First(void)
     {
@@ -124,18 +199,20 @@ class GameClass
             Floor[i].y = i*BlankHeight;
         }
 
-        Doodle.x = Floor[9].x + Doodle.Width;
+        Doodle.x = Floor[MAX_ARRSIZE-1].x + Doodle.Width;
         Doodle.y = Doodle.Height;
     }
 
-    void DrawSight(HDC hdc)
+    bool DrawSight(HDC hdc)
     {
         Image ImageDoodle((wchar_t*)L"Res\\Doodle.png");
         Image ImageFloor((wchar_t*)L"Res\\Floor_normal.png");
         Image ImageSky((wchar_t*)L"Res\\Sky.png");
-        if(ImageDoodle.GetLastStatus() != Status::Ok || ImageFloor.GetLastStatus() != Status::Ok)
+        Image ImageMoveFloor((wchar_t*)L"Res\\Floor_move.png");
+
+        if(ImageDoodle.GetLastStatus() != Status::Ok || ImageFloor.GetLastStatus() != Status::Ok || ImageMoveFloor.GetLastStatus() != Status::Ok)
         {
-            MessageBox(0,"文件数据丢失!",NULL,MB_OK|MB_ICONERROR);
+            return false;
         }
 
         Graphics Graph(hdc);
@@ -144,6 +221,13 @@ class GameClass
         {
             Graph.DrawImage(&ImageFloor,RectF(Floor[i].x,Floor[i].y,Floor[i].width,Floor[i].height));
         }
+
+        if(FloorMove.IsHave)
+        {
+            Graph.DrawImage(&ImageMoveFloor,RectF(FloorMove.x,FloorMove.y,FloorMove.width,FloorMove.height));
+        }
+        Score++;
+        return true;
     }
 };
 
