@@ -1,151 +1,174 @@
-#ifndef DATA_H_INCLUDED
-#define DATA_H_INCLUDED
+#if defined(UNICODE) && !defined(_UNICODE)
+    #define _UNICODE
+#elif defined(_UNICODE) && !defined(UNICODE)
+    #define UNICODE
+#endif
 
+#include <tchar.h>
 #include <windows.h>
 #include <gdiplus.h>
+#include <time.h>
+#include "Data.h"
+
 using namespace Gdiplus;
 
-#define MAX_WIDTH 360
-#define MAX_HEIGHT 640
+/*  Declare Windows procedure  */
+LRESULT CALLBACK WindowProcedure (HWND,UINT,WPARAM,LPARAM);
 
-#define MAX_ARRSIZE 10
-#define ID_TIMER 1
+GameClass Game;
 
-class FloorClass
+/*  Make the class name into a global variable  */
+TCHAR szClassName[ ] = _T("DoodleJumpWin32");
+
+int WINAPI WinMain (HINSTANCE hThisInstance,HINSTANCE hPrevInstance,LPSTR lpszArgument,int nCmdShow)
 {
-    public:
-    int x;
-    int y;
+    HWND hwnd;               /* This is the handle for our window */
+    MSG messages;            /* Here messages to the application are saved */
+    WNDCLASSEX wincl;        /* Data structure for the windowclass */
+    ULONG_PTR Token;
+    GdiplusStartupInput Input;
 
-    int width;
-    int height = 15;
+    GdiplusStartup(&Token,&Input,NULL);
+    srand(time(0));
+    Game.First();
 
-    void ReBorn(void)
+    /* The Window structure */
+    wincl.hInstance = hThisInstance;
+    wincl.lpszClassName = szClassName;
+    wincl.lpfnWndProc = WindowProcedure;      /* This function is called by windows */
+    wincl.style = CS_DBLCLKS;                 /* Catch double-clicks */
+    wincl.cbSize = sizeof(WNDCLASSEX);
+
+    /* Use default icon and mouse-pointer */
+    wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
+    wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
+    wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wincl.lpszMenuName = NULL;                 /* No menu */
+    wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
+    wincl.cbWndExtra = 0;                      /* structure or the window instance */
+    wincl.hbrBackground = 0;
+
+    /* Register the window class, and if it fails quit the program */
+    if (!RegisterClassEx (&wincl))
+        return 0;
+
+    /* The class is registered, let's create the program*/
+    hwnd = CreateWindowEx (
+           0,                   /* Extended possibilites for variation */
+           szClassName,         /* Classname */
+           _T("Win32 DoodleJump"),       /* Title Text */
+           WS_OVERLAPPEDWINDOW^WS_THICKFRAME^WS_MAXIMIZEBOX, /* default window */
+           CW_USEDEFAULT,       /* Windows decides the position */
+           CW_USEDEFAULT,       /* where the window ends up on the screen */
+           MAX_WIDTH,                 /* The programs width */
+           MAX_HEIGHT,                 /* and height in pixels */
+           HWND_DESKTOP,        /* The window is a child-window to desktop */
+           NULL,                /* No menu */
+           hThisInstance,       /* Program Instance handler */
+           NULL                 /* No Window Creation data */
+           );
+
+    /* Make the window visible on the screen */
+    ShowWindow (hwnd, nCmdShow);
+
+    /* Run the message loop. It will run until GetMessage() returns 0 */
+    while (GetMessage (&messages, NULL, 0, 0))
     {
-        if(y > MAX_HEIGHT)
-        {
-            x = rand()%MAX_WIDTH;
-            y = 0;
-            width = rand()%100+35;
-        }
+        /* Translate virtual-key messages into character messages */
+        TranslateMessage(&messages);
+        /* Send message to WindowProcedure */
+        DispatchMessage(&messages);
     }
 
-    void Move(void)
-    {
-        y+=1;
-    }
-};
+    GdiplusShutdown(Token);
 
-class DoodleClass
+    /* The program return-value is 0 - The value that PostQuitMessage() gave */
+    return messages.wParam;
+}
+
+
+/*  This function is called by the Windows function DispatchMessage()  */
+
+LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    public:
-    int x;
-    int y;
-    int Width = 40;
-    int Height = 40;
-
-    bool UpOrDown = false;      //跳跃方向，落下或者上升
-    int MaxJumpHeight = 130;    //极限跳跃高度.
-    int CountJumpPixel = 0;     //当前已经跳跃的像素高度
-    bool IsDead = false;
-
-    //左右移动.
-    void Move(char Directiton)
+    switch (message)                  /* handle the messages */
     {
-        switch(Directiton)
+        case WM_CREATE:
         {
-            case 'D':
+            SetTimer(hwnd,ID_TIMER,1,0);
+            break;
+        }
+
+        case WM_TIMER:
+        {
+            Game.Doodle.SetJumpDirection(Game.FloorMove,Game.Floor,MAX_ARRSIZE);
+            Game.Doodle.Jump();
+            Game.Doodle.SetJumpDirection(Game.FloorMove,Game.Floor,MAX_ARRSIZE);
+            Game.Doodle.Jump();
+
+            Game.FloorMove.Move();
+            Game.FloorMove.ReBorn();
+            for(int i = 0;i < MAX_ARRSIZE;i++)
             {
-                if(x < MAX_WIDTH)
-                {
-                    x+=10;
-                }
-                break;
+                Game.Floor[i].Move();
+                Game.Floor[i].ReBorn();
             }
-            case 'A':
+
+            Game.Doodle.Death();
+
+            if(Game.Doodle.IsDead)
             {
-                if(x > 0)
-                {
-                    x-=10;
-                }
-                break;
+                KillTimer(hwnd,ID_TIMER);
+                MessageBox(0,"游戏结束.","提示",MB_OK|MB_ICONERROR);
             }
-        }
-    }
 
-    //设置跳跃方向（落下[false]或者上升[true])
-    void SetJumpDirection(FloorClass* Arr,int Size)
-    {
-        for(int i = 0;i < MAX_ARRSIZE;i++)
+            InvalidateRect(hwnd,0,true);
+            break;
+        }
+
+        case WM_KEYDOWN:
         {
-            //满足条件:除了触碰踏板面还有跳跃方向为落下
-            if((x+Width) > Arr[i].x && (x) < (Arr[i].x+Arr[i].width) && (y+Height) == Arr[i].y && UpOrDown == false)
+            Game.Doodle.Move(wParam);
+
+            break;
+        }
+
+        case WM_PAINT:
+        {
+            char score[20];
+
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd,&ps);
+            HDC hDCBuffer = CreateCompatibleDC(hdc);
+
+            HBITMAP hBitmap = (HBITMAP)LoadImage(0,"Res//sky.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+            SelectObject(hDCBuffer,hBitmap);
+
+            if(!Game.DrawSight(hDCBuffer))
             {
-                UpOrDown = true;
-                CountJumpPixel=0;
+                KillTimer(hwnd,ID_TIMER);
+                MessageBox(0,"文件数据丢失!",NULL,MB_OK|MB_ICONERROR);
             }
+
+            BitBlt(hdc,0,0,MAX_WIDTH,MAX_HEIGHT,hDCBuffer,0,0,SRCCOPY);
+
+            wsprintf(score,"分数:%d",Game.Score/MAX_ARRSIZE);
+            TextOut(hdc,0,0,score,lstrlen(score));
+
+            EndPaint(hwnd,&ps);
+            DeleteDC(hDCBuffer);    //清理创建设备上下文句柄
+            DeleteObject(hBitmap);
+            break;
         }
+        case WM_DESTROY:
+        {
+            KillTimer(hwnd,ID_TIMER);
+            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
+            break;
+        }
+        default:                      /* for messages that we don't deal with */
+            return DefWindowProc (hwnd, message, wParam, lParam);
     }
 
-    //设置y坐标值
-    void Jump(void)
-    {
-        if(UpOrDown)
-        {
-            y--;
-            CountJumpPixel++;
-        }
-        else
-        {
-            y++;
-            CountJumpPixel--;
-        }
-
-        if(CountJumpPixel >= MaxJumpHeight)
-        {
-            UpOrDown = false;
-        }
-    }
-};
-
-class GameClass
-{
-    public:
-    FloorClass Floor[MAX_ARRSIZE];
-    DoodleClass Doodle;
-
-    void First(void)
-    {
-        int BlankHeight = MAX_HEIGHT/MAX_ARRSIZE;
-        for(int i = 0;i < MAX_ARRSIZE;i++)
-        {
-            Floor[i].x = rand()%MAX_WIDTH;
-            Floor[i].width = rand()%100+35;
-            Floor[i].y = i*BlankHeight;
-        }
-
-        Doodle.x = Floor[9].x + Doodle.Width;
-        Doodle.y = Doodle.Height;
-    }
-
-    void DrawSight(HDC hdc)
-    {
-        Image ImageDoodle((wchar_t*)L"Res\\Doodle.png");
-        Image ImageFloor((wchar_t*)L"Res\\Floor_normal.png");
-        Image ImageSky((wchar_t*)L"Res\\Sky.png");
-        if(ImageDoodle.GetLastStatus() != Status::Ok || ImageFloor.GetLastStatus() != Status::Ok)
-        {
-            MessageBox(0,"文件数据丢失!",NULL,MB_OK|MB_ICONERROR);
-        }
-
-        Graphics Graph(hdc);
-        Graph.DrawImage(&ImageDoodle,RectF(Doodle.x,Doodle.y,Doodle.Width,Doodle.Height));
-        for(int i = 0;i < MAX_ARRSIZE;i++)
-        {
-            Graph.DrawImage(&ImageFloor,RectF(Floor[i].x,Floor[i].y,Floor[i].width,Floor[i].height));
-        }
-    }
-};
-
-
-#endif // DATA_H_INCLUDED
+    return 0;
+}
