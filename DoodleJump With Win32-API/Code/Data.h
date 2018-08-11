@@ -114,9 +114,9 @@ class DoodleClass
         {
             case 'D':
             {
-                if(x < MAX_WIDTH)
+                if(x < MAX_WIDTH-Width)
                 {
-                    x+=10;
+                        x+=10;
                 }
                 break;
             }
@@ -173,7 +173,7 @@ class DoodleClass
 
     void Death(void)
     {
-        if(x > MAX_WIDTH)
+        if(y > MAX_HEIGHT)
         {
             IsDead = true;
         }
