@@ -81,12 +81,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
 				}
-				//去除WPS 热点 弹窗. 
-				hWILLBeClosed = FindWindowW(NULL,(LPCWSTR)L"WPS 热点");
-				if(hWILLBeClosed)
-				{
-					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
-				}
 			}
 			break;
 		}
