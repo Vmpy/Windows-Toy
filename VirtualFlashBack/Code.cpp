@@ -60,29 +60,9 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
 			if(wParam == Time)
 			{
 				//Use SPY++ to find the name of windows class
-				hWILLBeClosed = FindWindowW((LPCWSTR)L"PP11FrameClass",NULL);
-				if(hWILLBeClosed)
-				{
-					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
-				}
-				hWILLBeClosed = FindWindowW((LPCWSTR)L"PP12FrameClass",NULL);
-				if(hWILLBeClosed)
-				{
-					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
-				}
-				hWILLBeClosed = FindWindowW((LPCWSTR)L"PPTFrameClass",NULL);
-				if(hWILLBeClosed)
-				{
-					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
-				}
-				hWILLBeClosed = FindWindowW((LPCWSTR)L"PP10FrameClass",NULL);
-				if(hWILLBeClosed)
-				{
-					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
-				}
-				
 				//to be set and added
-				hWILLBeClosed = FindWindowW((LPCWSTR)L"OpusApp",NULL);
+				
+				hWILLBeClosed = FindWindowW(FILENAME,NULL);
 				if(hWILLBeClosed)
 				{
 					SendMessage(hWILLBeClosed,WM_CLOSE,0,0);
